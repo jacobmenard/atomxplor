@@ -4,6 +4,7 @@ import "./../node_modules/bootstrap/dist/css/bootstrap.min.css";
 import Dashboard from "./pages/Dashboard";
 import Activities from "./components/Activities";
 import Index from "./components";
+import Public from "./pages/Public";
 
 function App() {
   return (
@@ -15,6 +16,7 @@ function App() {
           <Route path="index" element={<Index />} />
           <Route path="activities" element={<Activities />} />
         </Route>
+        <Route path="/public" element={<Public />} />
       </Routes>
     </>
   );

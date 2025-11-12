@@ -1,5 +1,4 @@
 import React from "react";
-import "bootstrap/dist/css/bootstrap.min.css";
 
 const Activities = () => {
   return (
@@ -15,7 +14,7 @@ const Activities = () => {
         <p className="mb-0 flex-fill">15/20</p>
         <p className="mb-0 flex-fill">11/05/25 9:00 AM</p>
         <p className="mb-0 flex-fill">11/05/25 11:30 AM</p>
-        <p className="fw-bold mb-0 flex-fill" style={{color: "#08CB00"}}>Started</p>
+        <button className="bg-white border-0 fw-bold" style={{color: "#08CB00"}}>Started</button>
       </div>
     </div>
   );

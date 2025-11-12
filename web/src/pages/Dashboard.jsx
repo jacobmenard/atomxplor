@@ -78,7 +78,7 @@ const Dashboard = () => {
                 {
                   icon: "bi-globe",
                   label: "Public Page",
-                  path: "public-page",
+                  path: "/public",
                 },
                 {
                   icon: "bi-question-circle",
@@ -120,7 +120,6 @@ const Dashboard = () => {
           </div>
         </div>
 
-        {/* Main Content */}
         <div className="col p-3">
           <button
             className="btn btn-primary mb-3 d-md-none"
