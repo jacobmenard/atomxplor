@@ -1,51 +1,11 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Link, Outlet, useNavigate } from "react-router-dom";
 
 const Dashboard = () => {
-  const [user, setUser] = useState({});
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [error, setError] = useState("");
-  const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
-
-  useEffect(() => {
-    const fetchUser = async () => {
-      const authToken = localStorage.getItem("authToken");
-      const userId = localStorage.getItem("userId");
-
-      if (!authToken || !userId) {
-        setError("Authentication token or user ID not found.");
-        navigate("/");
-        return;
-      }
-
-      try {
-        const response = await fetch(
-          `http://127.0.0.1:8000/api/user-profile/${userId}`,
-          {
-            method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${authToken}`,
-            },
-          }
-        );
-
-        if (!response.ok) throw new Error("Failed to fetch user credentials.");
-
-        const data = await response.json();
-        setUser(data.user);
-        setTimeout(() => setIsLoading(false), 600);
-      } catch (err) {
-        console.error("Fetch user error:", err);
-        setError(err.message);
-        setIsLoading(false);
-      }
-    };
-
-    fetchUser();
-  }, [navigate]);
 
   const handleLogout = async () => {
     try {
@@ -87,7 +47,6 @@ const Dashboard = () => {
   return (
     <div className="container-fluid min-vh-100 p-0">
       <div className="row g-0">
-        {/* Sidebar */}
         <div
           className={`col-12 col-md-3 col-lg-2 d-flex flex-column justify-content-between p-3 bg-white rounded-start mb-3 mb-md-0 ${
             sidebarOpen ? "d-block" : "d-none"
@@ -108,23 +67,23 @@ const Dashboard = () => {
                 {
                   icon: "bi-speedometer2",
                   label: "Dashboard",
-                  path: "/dashboard",
+                  path: "index",
                 },
-                { icon: "bi-people", label: "Activities", path: "/activities" },
+                { icon: "bi-people", label: "Activities", path: "activities" },
                 {
                   icon: "bi-file-earmark-text",
                   label: "Reports",
-                  path: "/reports",
+                  path: "reports",
                 },
                 {
                   icon: "bi-globe",
                   label: "Public Page",
-                  path: "/public-page",
+                  path: "public-page",
                 },
                 {
                   icon: "bi-question-circle",
                   label: "Questions",
-                  path: "/questions",
+                  path: "questions",
                 },
               ].map((item, idx) => (
                 <li key={idx} className="nav-item mb-2">
@@ -161,7 +120,7 @@ const Dashboard = () => {
           </div>
         </div>
 
-        {/* Main content */}
+        {/* Main Content */}
         <div className="col p-3">
           <button
             className="btn btn-primary mb-3 d-md-none"
@@ -170,27 +129,7 @@ const Dashboard = () => {
             {sidebarOpen ? "Hide Sidebar" : "Show Sidebar"}
           </button>
 
-          <div className="bg-white p-4 rounded border-0">
-            {isLoading ? (
-              <h5>Loading user data...</h5>
-            ) : (
-              <h2>Welcome back, {user?.username || "User"}!</h2>
-            )}
-            <div className="d-flex flex-row gap-2">
-              <div className="bg-danger text-white rounded-3 p-3 w-25 w-md-25 text-start shadow-sm">
-                <p className="mb-1 fw-semibold">Created Activities</p>
-                <h4 className="fw-bold mb-0">50</h4>
-              </div>
-              <div className="bg-warning text-white rounded-3 p-3 w-25 w-md-25 text-start shadow-sm">
-                <p className="mb-1 fw-semibold">Ongoing Activities</p>
-                <h4 className="fw-bold mb-0">10</h4>
-              </div>
-              <div className="bg-success text-white rounded-3 p-3 w-25 w-md-25 text-start shadow-sm">
-                <p className="mb-1 fw-semibold">Done Activities</p>
-                <h4 className="fw-bold mb-0">40</h4>
-              </div>
-            </div>
-          </div>
+          <Outlet />
         </div>
       </div>
 
