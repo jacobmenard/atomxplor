@@ -5,6 +5,7 @@ import Dashboard from "./pages/Dashboard";
 import Activities from "./components/Activities";
 import Index from "./components";
 import Public from "./pages/Public";
+import Question from "./components/Question";
 
 function App() {
   return (
@@ -15,6 +16,7 @@ function App() {
           <Route index element={<Index />} />
           <Route path="index" element={<Index />} />
           <Route path="activities" element={<Activities />} />
+          <Route path="questions" element={<Question />} />
         </Route>
         <Route path="/public" element={<Public />} />
       </Routes>

@@ -6,6 +6,7 @@ const Index = () => {
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
   const [isLoading, setIsLoading] = useState(true);
+  const [showModal, setShowModal] = useState(false); 
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -47,6 +48,11 @@ const Index = () => {
     fetchUser();
   }, [navigate]);
 
+  const handleStartNow = () => {
+    setShowModal(false);
+    alert("Activity Started!"); 
+  };
+
   return (
     <div>
       <div className="bg-white p-4 rounded border-0">
@@ -84,11 +90,55 @@ const Index = () => {
             <button
               className="bg-white border-0 fw-bold"
               style={{ color: "#08CB00" }}
+              onClick={() => setShowModal(true)}
             >
               Started
             </button>
           </div>
         </div>
+
+        
+        {showModal && (
+          <div
+            className="modal fade show d-block"
+            tabIndex="-1"
+            style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
+          >
+            <div className="modal-dialog modal-dialog-centered">
+              <div className="modal-content p-4 text-center">
+                <div className="mb-3">
+                  <div
+                    style={{
+                      width: "60px",
+                      height: "60px",
+                      margin: "0 auto",
+                      borderRadius: "50%",
+                      backgroundColor: "#2196F3",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                  >
+                    <span style={{ color: "white", fontSize: "30px" }}>i</span>
+                  </div>
+                </div>
+                <h5 className="fw-bold mb-2">Message alert!</h5>
+                <p className="mb-4">Do you want to start the activity?</p>
+                <div className="d-flex justify-content-center gap-3">
+                  <button className="btn btn-primary" onClick={handleStartNow}>
+                    Yes, start now
+                  </button>
+                  <button
+                    className="btn btn-danger"
+                    onClick={() => setShowModal(false)}
+                  >
+                    No, not yet
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
         {error && (
           <div className="alert alert-danger mt-3 py-2" role="alert">
