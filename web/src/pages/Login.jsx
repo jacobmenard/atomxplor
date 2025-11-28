@@ -17,7 +17,7 @@ const Login = () => {
     setMessage("");
     setLoading(true);
 
-    const API_ENDPOINT = ""; 
+    const API_ENDPOINT = "http://localhost:8000/api/v1/login"; 
 
     try {
       const response = await fetch(API_ENDPOINT, {
@@ -27,8 +27,8 @@ const Login = () => {
           Accept: "application/json",
         },
         body: JSON.stringify({
-          email,
-          password,
+          email: email,
+          password: password,
         }),
       });
 
@@ -36,11 +36,11 @@ const Login = () => {
 
       if (response.ok) {
         localStorage.setItem("authToken", data.token);
-        localStorage.setItem("email", data.user.email);
         localStorage.setItem("userId", data.user.id);
 
         setToken(data.token);
         setMessage(data.message || "Login Successfully");
+        console.log("Login Successfully");
         navigate("/dashboard");
       } else {
         const errorMessage =
