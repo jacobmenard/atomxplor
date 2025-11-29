@@ -17,10 +17,8 @@ const Login = () => {
     setMessage("");
     setLoading(true);
 
-    const API_ENDPOINT = "http://localhost:8000/api/v1/login"; 
-
     try {
-      const response = await fetch(API_ENDPOINT, {
+      const response = await fetch("http://localhost:8000/api/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -36,7 +34,6 @@ const Login = () => {
 
       if (response.ok) {
         localStorage.setItem("authToken", data.token);
-        localStorage.setItem("userId", data.user.id);
 
         setToken(data.token);
         setMessage(data.message || "Login Successfully");
@@ -85,6 +82,7 @@ const Login = () => {
                 <input
                   type="email"
                   className="form-control form-control-lg"
+                  style={{ fontSize: "15px" }}
                   id="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
@@ -99,6 +97,7 @@ const Login = () => {
                 <input
                   type="password"
                   className="form-control form-control-lg"
+                  style={{ fontSize: "15px" }}
                   id="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
