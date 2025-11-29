@@ -1,56 +1,61 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
-const Index = () => {
-  const [user, setUser] = useState({});
-  const [error, setError] = useState("");
+function Index() {
+  const [name, setName] = useState("");
   const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(true);
-  const [showModal, setShowModal] = useState(false); 
+  const [showModal, setShowModal] = useState(false);
+
   const navigate = useNavigate();
+  const API_END_POINT = "http://127.0.0.1:8000/api/";
+  
+  const authToken = localStorage.getItem("authToken");
 
   useEffect(() => {
+    if (!authToken) {
+      setError("Authentication token not found.");
+      navigate("/");
+      return;
+    }
+
     const fetchUser = async () => {
-      const authToken = localStorage.getItem("authToken");
-      const userId = localStorage.getItem("userId");
-
-      if (!authToken || !userId) {
-        setError("Authentication token or user ID not found.");
-        navigate("/");
-        return;
-      }
-
       try {
-        const response = await fetch(
-          `http://127.0.0.1:8000/api/user-profile/${userId}`,
-          {
-            method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${authToken}`,
-            },
-          }
-        );
-
-        if (!response.ok) throw new Error("Failed to fetch user credentials.");
+        const response = await fetch(API_END_POINT + "user", {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+            Authorization: `Bearer ${authToken}`,
+          },
+        });
 
         const data = await response.json();
-        setUser(data.user || {});
+
+        if (!response.ok) {
+          setError(data.message || "Failed to fetch user data");
+          setIsLoading(false);
+          return;
+        }
+
+        // Same style as SuperAdmin
+        setName(data.name || "");
         setMessage(data.message || "");
+
         setTimeout(() => setIsLoading(false), 600);
       } catch (err) {
-        console.error("Fetch user error:", err);
-        setError(err.message);
+        setError("Error fetching user data",err);
         setIsLoading(false);
       }
     };
 
     fetchUser();
-  }, [navigate]);
+  }, [authToken, navigate]);
 
   const handleStartNow = () => {
     setShowModal(false);
-    alert("Activity Started!"); 
+    alert("Activity Started!");
   };
 
   return (
@@ -59,9 +64,9 @@ const Index = () => {
         {message && <h5 className="text-success mb-3">{message}</h5>}
 
         {isLoading ? (
-          <h5>Loading user data...</h5>
+          <h5>Welcome back, ....</h5>
         ) : (
-          <h2>Welcome back, {user?.username || "User"}!</h2>
+          <h2>Welcome back, {name || "User"}!</h2>
         )}
 
         <div className="d-flex flex-row gap-2 mt-3 flex-wrap">
@@ -97,7 +102,6 @@ const Index = () => {
           </div>
         </div>
 
-        
         {showModal && (
           <div
             className="modal fade show d-block"
@@ -148,6 +152,6 @@ const Index = () => {
       </div>
     </div>
   );
-};
+}
 
 export default Index;
