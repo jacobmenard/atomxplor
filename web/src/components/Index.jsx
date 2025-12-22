@@ -10,7 +10,7 @@ function Index() {
 
   const navigate = useNavigate();
   const API_END_POINT = "http://127.0.0.1:8000/api/";
-  
+
   const authToken = localStorage.getItem("authToken");
 
   useEffect(() => {
@@ -39,13 +39,12 @@ function Index() {
           return;
         }
 
-        // Same style as SuperAdmin
         setName(data.name || "");
         setMessage(data.message || "");
 
         setTimeout(() => setIsLoading(false), 600);
       } catch (err) {
-        setError("Error fetching user data",err);
+        setError("Error fetching user data", err);
         setIsLoading(false);
       }
     };
