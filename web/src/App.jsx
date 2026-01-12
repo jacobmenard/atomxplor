@@ -6,7 +6,6 @@ import Activities from "./components/Activities";
 import Index from "./components";
 import Public from "./pages/Public";
 import Question from "./components/Question";
-import SuperAdmin from "./pages/SuperAdmin";
 
 function App() {
   return (
@@ -20,7 +19,6 @@ function App() {
           <Route path="questions" element={<Question />} />
         </Route>
         <Route path="/public" element={<Public />} />
-        <Route path="/Admin" element={<SuperAdmin />} />
       </Routes>
     </>
   );

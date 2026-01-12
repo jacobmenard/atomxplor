@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 const Login = () => {
@@ -11,30 +11,24 @@ const Login = () => {
 
   const navigate = useNavigate();
 
-  const authToken = localStorage.getItem("authToken");
-
-  useEffect(() => {
-    if(authToken) {
-      navigate('/dashboard');
-    }
-  }), [navigate];
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
     setMessage("");
     setLoading(true);
 
+    const API_ENDPOINT = ""; 
+
     try {
-      const response = await fetch("http://localhost:8000/api/login", {
+      const response = await fetch(API_ENDPOINT, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Accept: "application/json",
         },
         body: JSON.stringify({
-          email: email,
-          password: password,
+          email,
+          password,
         }),
       });
 
@@ -42,10 +36,11 @@ const Login = () => {
 
       if (response.ok) {
         localStorage.setItem("authToken", data.token);
+        localStorage.setItem("email", data.user.email);
+        localStorage.setItem("userId", data.user.id);
 
         setToken(data.token);
         setMessage(data.message || "Login Successfully");
-        console.log("Login Successfully");
         navigate("/dashboard");
       } else {
         const errorMessage =
@@ -90,7 +85,6 @@ const Login = () => {
                 <input
                   type="email"
                   className="form-control form-control-lg"
-                  style={{ fontSize: "15px" }}
                   id="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
@@ -105,7 +99,6 @@ const Login = () => {
                 <input
                   type="password"
                   className="form-control form-control-lg"
-                  style={{ fontSize: "15px" }}
                   id="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}

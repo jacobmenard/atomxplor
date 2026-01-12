@@ -7,18 +7,18 @@ const Dashboard = () => {
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
-  const authToken = localStorage.getItem("authToken");
-
-  if (!authToken) {
-    setError("No authentication token found.");
-    navigate("/");
-  }
-
   const handleLogout = async () => {
     try {
       setIsLoggingOut(true);
+      const authToken = localStorage.getItem("authToken");
 
-      const response = await fetch("http://localhost:8000/api/logout", {
+      if (!authToken) {
+        setError("No authentication token found.");
+        navigate("/");
+        return;
+      }
+
+      const response = await fetch("", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -29,6 +29,8 @@ const Dashboard = () => {
 
       if (response.ok) {
         localStorage.removeItem("authToken");
+        localStorage.removeItem("username");
+        localStorage.removeItem("userId");
         setTimeout(() => navigate("/"), 1000);
       } else {
         const errorData = await response.json();
