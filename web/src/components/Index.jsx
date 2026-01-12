@@ -5,12 +5,12 @@ function Index() {
   const [name, setName] = useState("");
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+  const [activities, setActivities] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
 
   const navigate = useNavigate();
   const API_END_POINT = "http://127.0.0.1:8000/api/";
-
   const authToken = localStorage.getItem("authToken");
 
   useEffect(() => {
@@ -20,12 +20,34 @@ function Index() {
       return;
     }
 
+    const fetchDashboard = async () => {
+      try {
+        const response = await fetch(API_END_POINT + "v1/dashboard", {
+          method: "GET",
+          headers: {
+            Accept: "application/json",
+            Authorization: `Bearer ${authToken}`,
+          },
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+          setError(result.message || "Failed to fetch activities");
+          return;
+        }
+
+        setActivities(result.data);
+      } catch {
+        setError("Error fetching activity data");
+      }
+    };
+
     const fetchUser = async () => {
       try {
         const response = await fetch(API_END_POINT + "user", {
           method: "GET",
           headers: {
-            "Content-Type": "application/json",
             Accept: "application/json",
             Authorization: `Bearer ${authToken}`,
           },
@@ -40,16 +62,15 @@ function Index() {
         }
 
         setName(data.name || "");
-        setMessage(data.message || "");
-
         setTimeout(() => setIsLoading(false), 600);
-      } catch (err) {
-        setError("Error fetching user data", err);
+      } catch {
+        setError("Error fetching user data");
         setIsLoading(false);
       }
     };
 
     fetchUser();
+    fetchDashboard();
   }, [authToken, navigate]);
 
   const handleStartNow = () => {
@@ -71,34 +92,51 @@ function Index() {
         <div className="d-flex flex-row gap-2 mt-3 flex-wrap">
           <div className="bg-danger text-white rounded-3 p-3 w-25 text-start shadow-sm">
             <p className="mb-1 fw-semibold">Created Activities</p>
-            <h4 className="fw-bold mb-0">50</h4>
+            <h4 className="fw-bold mb-0">
+              {activities?.total_activities ?? 0}
+            </h4>
           </div>
+
           <div className="bg-warning text-white rounded-3 p-3 w-25 text-start shadow-sm">
             <p className="mb-1 fw-semibold">Ongoing Activities</p>
-            <h4 className="fw-bold mb-0">10</h4>
+            <h4 className="fw-bold mb-0">
+              {activities?.total_ongoing_activities ?? 0}
+            </h4>
           </div>
+
           <div className="bg-success text-white rounded-3 p-3 w-25 text-start shadow-sm">
             <p className="mb-1 fw-semibold">Done Activities</p>
-            <h4 className="fw-bold mb-0">40</h4>
+            <h4 className="fw-bold mb-0">
+              {activities?.total_done_activities ?? 0}
+            </h4>
           </div>
         </div>
 
         <div className="mt-4">
           <h3 className="mb-3">List of Ongoing Activities</h3>
 
-          <div className="d-flex justify-content-between align-items-center border rounded-4 p-3 mt-3 bg-white shadow-sm flex-wrap text-center">
-            <p className="fw-bold mb-0 flex-fill">Grade 1 Science Test</p>
-            <p className="mb-0 flex-fill">15/20</p>
-            <p className="mb-0 flex-fill">11/05/25 9:00 AM</p>
-            <p className="mb-0 flex-fill">11/05/25 11:30 AM</p>
-            <button
-              className="bg-white border-0 fw-bold"
-              style={{ color: "#08CB00" }}
-              onClick={() => setShowModal(true)}
-            >
-              Started
-            </button>
-          </div>
+          {activities?.ongoing_activities?.length > 0 ? (
+            activities.ongoing_activities.map((activity) => (
+              <div
+                key={activity.id}
+                className="d-flex justify-content-between align-items-center border rounded-4 p-3 mt-3 bg-white shadow-sm flex-wrap text-center"
+              >
+                <p className="fw-bold mb-0 flex-fill">{activity.title}</p>
+                <p className="mb-0 flex-fill">{activity.score ?? "--"}</p>
+                <p className="mb-0 flex-fill">{activity.start_time}</p>
+                <p className="mb-0 flex-fill">{activity.end_time}</p>
+                <button
+                  className="bg-white border-0 fw-bold"
+                  style={{ color: "#08CB00" }}
+                  onClick={() => setShowModal(true)}
+                >
+                  Started
+                </button>
+              </div>
+            ))
+          ) : (
+            <p className="text-muted">No ongoing activities.</p>
+          )}
         </div>
 
         {showModal && (
@@ -125,8 +163,10 @@ function Index() {
                     <span style={{ color: "white", fontSize: "30px" }}>i</span>
                   </div>
                 </div>
+
                 <h5 className="fw-bold mb-2">Message alert!</h5>
                 <p className="mb-4">Do you want to start the activity?</p>
+
                 <div className="d-flex justify-content-center gap-3">
                   <button className="btn btn-primary" onClick={handleStartNow}>
                     Yes, start now
