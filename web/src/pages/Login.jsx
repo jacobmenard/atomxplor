@@ -10,14 +10,18 @@ const Login = () => {
   const [token, setToken] = useState("");
 
   const navigate = useNavigate();
+  const authToken = localStorage.getItem("authToken");
 
+  if(authToken) {
+    navigate("/dashboard");
+  }
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
     setMessage("");
     setLoading(true);
 
-    const API_ENDPOINT = "http://localhost:8000/api/v1/login"; 
+    const API_ENDPOINT = "http://localhost:8000/api/login"; 
 
     try {
       const response = await fetch(API_ENDPOINT, {

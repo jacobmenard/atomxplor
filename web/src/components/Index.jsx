@@ -3,54 +3,80 @@ import { useNavigate } from "react-router-dom";
 
 const Index = () => {
   const [user, setUser] = useState({});
+  const [dashboard, setDashboard] = useState({
+    total_activities: 0,
+    total_ongoing_activities: 0,
+    total_done_activities: 0,
+    ongoing_activities: [],
+  });
+
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
   const [isLoading, setIsLoading] = useState(true);
-  const [showModal, setShowModal] = useState(false); 
+  const [showModal, setShowModal] = useState(false);
+
   const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchUser = async () => {
-      const authToken = localStorage.getItem("authToken");
-      const userId = localStorage.getItem("userId");
+    const authToken = localStorage.getItem("authToken");
+    const userId = localStorage.getItem("userId");
 
-      if (!authToken || !userId) {
-        setError("Authentication token or user ID not found.");
-        navigate("/");
-        return;
-      }
+    if (!authToken || !userId) {
+      setError("Authentication token or user ID not found.");
+      navigate("/");
+      return;
+    }
 
+    const fetchDashboard = async () => {
       try {
-        const response = await fetch(
-          `http://127.0.0.1:8000/api/user-profile/${userId}`,
-          {
-            method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${authToken}`,
-            },
-          }
-        );
+        const response = await fetch("http://127.0.0.1:8000/api/v1/dashboard", {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${authToken}`,
+          },
+        });
 
-        if (!response.ok) throw new Error("Failed to fetch user credentials.");
+        if (!response.ok) throw new Error("Failed to fetch dashboard data.");
+
+        const result = await response.json();
+        setDashboard(result.data);
+      } catch (err) {
+        setError(err.message);
+      }
+    };
+
+    const fetchUser = async () => {
+      try {
+        const response = await fetch("http://127.0.0.1:8000/api/user", {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${authToken}`,
+          },
+        });
+
+        if (!response.ok) throw new Error("Failed to fetch user.");
 
         const data = await response.json();
-        setUser(data.user || {});
-        setMessage(data.message || "");
-        setTimeout(() => setIsLoading(false), 600);
+
+       
+        setUser(data);
+        setMessage(""); 
       } catch (err) {
-        console.error("Fetch user error:", err);
         setError(err.message);
-        setIsLoading(false);
+      } finally {
+        setTimeout(() => setIsLoading(false), 600);
       }
     };
 
     fetchUser();
+    fetchDashboard();
   }, [navigate]);
 
   const handleStartNow = () => {
     setShowModal(false);
-    alert("Activity Started!"); 
+    alert("Activity Started!");
   };
 
   return (
@@ -61,43 +87,57 @@ const Index = () => {
         {isLoading ? (
           <h5>Loading user data...</h5>
         ) : (
-          <h2>Welcome back, {user?.username || "User"}!</h2>
+          <h2>Welcome back, {user?.name || "User"}!</h2>
         )}
 
         <div className="d-flex flex-row gap-2 mt-3 flex-wrap">
           <div className="bg-danger text-white rounded-3 p-3 w-25 text-start shadow-sm">
             <p className="mb-1 fw-semibold">Created Activities</p>
-            <h4 className="fw-bold mb-0">50</h4>
+            <h4 className="fw-bold mb-0">{dashboard.total_activities}</h4>
           </div>
+
           <div className="bg-warning text-white rounded-3 p-3 w-25 text-start shadow-sm">
             <p className="mb-1 fw-semibold">Ongoing Activities</p>
-            <h4 className="fw-bold mb-0">10</h4>
+            <h4 className="fw-bold mb-0">
+              {dashboard.total_ongoing_activities}
+            </h4>
           </div>
+
           <div className="bg-success text-white rounded-3 p-3 w-25 text-start shadow-sm">
             <p className="mb-1 fw-semibold">Done Activities</p>
-            <h4 className="fw-bold mb-0">40</h4>
+            <h4 className="fw-bold mb-0">{dashboard.total_done_activities}</h4>
           </div>
         </div>
 
         <div className="mt-4">
           <h3 className="mb-3">List of Ongoing Activities</h3>
 
-          <div className="d-flex justify-content-between align-items-center border rounded-4 p-3 mt-3 bg-white shadow-sm flex-wrap text-center">
-            <p className="fw-bold mb-0 flex-fill">Grade 1 Science Test</p>
-            <p className="mb-0 flex-fill">15/20</p>
-            <p className="mb-0 flex-fill">11/05/25 9:00 AM</p>
-            <p className="mb-0 flex-fill">11/05/25 11:30 AM</p>
-            <button
-              className="bg-white border-0 fw-bold"
-              style={{ color: "#08CB00" }}
-              onClick={() => setShowModal(true)}
-            >
-              Started
-            </button>
-          </div>
+          {dashboard.ongoing_activities.length === 0 ? (
+            <p>No ongoing activities.</p>
+          ) : (
+            dashboard.ongoing_activities.map((activity) => (
+              <div
+                key={activity.id}
+                className="d-flex justify-content-between align-items-center border rounded-4 p-3 mt-3 bg-white shadow-sm flex-wrap text-center"
+              >
+                <p className="fw-bold mb-0 flex-fill">
+                  Activity #{activity.id}
+                </p>
+                <p className="mb-0 flex-fill">{activity.items} Items</p>
+                <p className="mb-0 flex-fill">{activity.time_started}</p>
+                <p className="mb-0 flex-fill">{activity.time_ended}</p>
+                <button
+                  className="bg-white border-0 fw-bold"
+                  style={{ color: "#08CB00" }}
+                  onClick={() => setShowModal(true)}
+                >
+                  Started
+                </button>
+              </div>
+            ))
+          )}
         </div>
 
-        
         {showModal && (
           <div
             className="modal fade show d-block"
