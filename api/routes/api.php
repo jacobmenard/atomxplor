@@ -1,11 +1,17 @@
 <?php
 
 use Illuminate\Http\Request;
+use App\Http\Resources\UserResource;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\UserController;
+use App\Http\Controllers\AnswerController;
+use App\Http\Controllers\StudentController;
 use App\Http\Controllers\ActivityController;
 use App\Http\Controllers\QuestionController;
 use App\Http\Controllers\SubjectsController;
+use App\Http\Controllers\GradeLevelController;
+use App\Http\Controllers\ActivityParticipantController;
 
 /*
 |--------------------------------------------------------------------------
@@ -21,7 +27,7 @@ use App\Http\Controllers\SubjectsController;
 Route::post('/login', [AuthController::class, 'login']);
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
+    return new UserResource($request->user());
 });
 
 Route::prefix('v1')->group(function () {
@@ -31,12 +37,25 @@ Route::prefix('v1')->group(function () {
     Route::resource('/subject', SubjectsController::class);
 
     Route::get('/dashboard', [ActivityController::class, 'dashboard']);
+
+    Route::prefix('activity')->group(function() {
+        Route::post('/{id}/submit-answer', [AnswerController::class, 'answer']);
+        Route::get('/{id}/check-already-answ    ered', [ActivityParticipantController::class, 'checkAlreadyAnswered']);
+    });
+    
+    Route::resource('/grade-level', GradeLevelController::class);
+    Route::prefix('/students')->group(function() {
+        Route::get('/list', [UserController::class, 'studentList']);
+        Route::post('/new-student', [UserController::class, 'newStudent']);
+    });
 });
 
     // public apis
     Route::prefix('/public')->group(function() {
         Route::prefix('activity')->group(function() {
             Route::get('/list', [ActivityController::class, 'publicActivityList']);
+            Route::get('/{id}', [ActivityController::class, 'show']);
+
         });
     });
 });
