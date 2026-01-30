@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
 const Question = () => {
@@ -16,6 +16,9 @@ const Question = () => {
   const [questionType, setQuestionType] = useState("multiple_choice");
   const [questions, setQuestions] = useState([]);
 
+  const [subjects, setSubjects] = useState([]);
+  const [selectedSubjectId, setSelectedSubjectId] = useState(subjectId || "");
+
   const [choices, setChoices] = useState([
     { question_choice: "a", question_text: "" },
     { question_choice: "b", question_text: "" },
@@ -23,46 +26,69 @@ const Question = () => {
     { question_choice: "d", question_text: "" },
   ]);
 
-  const [selectedSubjectId, setSelectedSubjectId] = useState(subjectId || "");
+  const fetchSubjects = useCallback(async () => {
+    const authToken = localStorage.getItem("authToken");
+    if (!authToken) return;
+
+    try {
+      const response = await fetch("http://127.0.0.1:8000/api/v1/subject", {
+        headers: { Authorization: `Bearer ${authToken}` },
+      });
+
+      const data = await response.json();
+      if (!response.ok)
+        throw new Error(data.message || "Failed to load subjects");
+
+      const subjectList = data.data || [];
+      setSubjects(subjectList);
+
+      if (!selectedSubjectId && subjectList.length) {
+        setSelectedSubjectId(String(subjectList[0].id));
+      }
+    } catch (error) {
+      setMessage(error.message);
+      setMessageType("error");
+    }
+  }, []);
 
   useEffect(() => {
     const authToken = localStorage.getItem("authToken");
     if (!authToken) {
       navigate("/");
-    } else {
-      fetchQuestions();
+      return;
     }
-  }, [navigate, subjectId]);
+    fetchSubjects();
+  }, [navigate, fetchSubjects]);
 
-  const fetchQuestions = async () => {
+  const fetchQuestions = useCallback(async () => {
     const authToken = localStorage.getItem("authToken");
-    setIsLoading(true);
+    if (!authToken) return;
 
+    setIsLoading(true);
     try {
-      const response = await fetch(
-        `http://127.0.0.1:8000/api/v1/question?subject_id=${selectedSubjectId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${authToken}`,
-          },
-        }
-      );
+      const response = await fetch("http://127.0.0.1:8000/api/v1/question", {
+        method: "GET",
+        headers: { Authorization: `Bearer ${authToken}` },
+      });
 
       const data = await response.json();
+      if (!response.ok)
+        throw new Error(data.message || "Failed to fetch questions");
 
-      if (response.ok) {
-        setQuestions(data.data || []);
-      } else {
-        setMessage(data.message || "Failed to fetch questions");
-        setMessageType("error");
-      }
+      setQuestions(Array.isArray(data.data) ? data.data : []);
     } catch (error) {
-      setMessage("Error fetching questions: " + error.message);
+      setMessage(error.message);
       setMessageType("error");
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    if (selectedSubjectId) {
+      fetchQuestions();
+    }
+  }, [selectedSubjectId, fetchQuestions]);
 
   const resetModal = () => {
     setQuestion("");
@@ -74,41 +100,49 @@ const Question = () => {
       { question_choice: "c", question_text: "" },
       { question_choice: "d", question_text: "" },
     ]);
-    setSelectedSubjectId(subjectId || "");
     setMessage("");
     setMessageType("info");
   };
 
   const handleChoiceChange = (index, value) => {
-    const updatedChoices = [...choices];
-    updatedChoices[index].question_text = value;
-    setChoices(updatedChoices);
+    const updated = [...choices];
+    updated[index].question_text = value;
+    setChoices(updated);
   };
 
   const handleSaveQuestion = async () => {
     if (isSaving) return;
 
     const authToken = localStorage.getItem("authToken");
+    if (!authToken) {
+      navigate("/");
+      return;
+    }
 
-    if (!question || !answer) {
-      setMessage("Question and answer are required.");
+    if (!question || !selectedSubjectId) {
+      setMessage("Question and subject are required.");
       setMessageType("error");
       return;
     }
 
-    if (!selectedSubjectId) {
-      setMessage("Subject ID is missing.");
-      setMessageType("error");
-      return;
-    }
+    if (questionType === "multiple_choice") {
+      if (!answer) {
+        setMessage("Answer is required for multiple choice.");
+        setMessageType("error");
+        return;
+      }
 
-    if (
-      questionType === "multiple_choice" &&
-      choices.some((c) => c.question_text.trim() === "")
-    ) {
-      setMessage("All choices must be filled.");
-      setMessageType("error");
-      return;
+      if (!["a", "b", "c", "d"].includes(answer.trim().toLowerCase())) {
+        setMessage("Answer must be a, b, c, or d.");
+        setMessageType("error");
+        return;
+      }
+
+      if (choices.some((c) => !c.question_text.trim())) {
+        setMessage("All choices must be filled.");
+        setMessageType("error");
+        return;
+      }
     }
 
     setIsSaving(true);
@@ -122,30 +156,31 @@ const Question = () => {
           Authorization: `Bearer ${authToken}`,
         },
         body: JSON.stringify({
-          subject_id: parseInt(selectedSubjectId),
+          subject_id: Number(selectedSubjectId),
           question,
-          answer,
+          answer: questionType === "multiple_choice" ? answer : null,
           question_type: questionType,
-          question_items: choices.map((choice) => ({
-            question_choice: choice.question_choice,
-            question_text: choice.question_text,
-            question_image: null,
-          })),
+          question_items:
+            questionType === "multiple_choice"
+              ? choices.map((c) => ({
+                  question_choice: c.question_choice,
+                  question_text: c.question_text,
+                  question_image: null,
+                }))
+              : [],
         }),
       });
 
       const data = await response.json();
-
-      if (response.ok) {
-        setMessage(data.message || "Question successfully created");
-        setMessageType("success");
-
-        setShowModal(false);
-        resetModal();
-        fetchQuestions();
-      } else {
+      if (!response.ok)
         throw new Error(data.message || "Failed to create question");
-      }
+
+      setMessage(data.message || "Question successfully created");
+      setMessageType("success");
+
+      setShowModal(false);
+      resetModal();
+      fetchQuestions();
     } catch (error) {
       setMessage(error.message);
       setMessageType("error");
@@ -154,33 +189,28 @@ const Question = () => {
     }
   };
 
-  const handleDeleteQuestion = async (questionId) => {
-    if (!window.confirm("Are you sure you want to delete this question?")) {
+  const handleDeleteQuestion = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this question?"))
       return;
-    }
 
     const authToken = localStorage.getItem("authToken");
 
     try {
       const response = await fetch(
-        `http://127.0.0.1:8000/api/v1/question/${questionId}`,
+        `http://127.0.0.1:8000/api/v1/question/${id}`,
         {
           method: "DELETE",
-          headers: {
-            Authorization: `Bearer ${authToken}`,
-          },
+          headers: { Authorization: `Bearer ${authToken}` },
         }
       );
 
       const data = await response.json();
-
-      if (response.ok) {
-        setMessage(data.message || "Question deleted successfully");
-        setMessageType("success");
-        fetchQuestions();
-      } else {
+      if (!response.ok)
         throw new Error(data.message || "Failed to delete question");
-      }
+
+      setMessage(data.message || "Question deleted successfully");
+      setMessageType("success");
+      fetchQuestions();
     } catch (error) {
       setMessage(error.message);
       setMessageType("error");
@@ -188,14 +218,9 @@ const Question = () => {
   };
 
   const getAlertClass = () => {
-    switch (messageType) {
-      case "success":
-        return "alert-success";
-      case "error":
-        return "alert-danger";
-      default:
-        return "alert-info";
-    }
+    if (messageType === "success") return "alert-success";
+    if (messageType === "error") return "alert-danger";
+    return "alert-info";
   };
 
   return (
@@ -203,7 +228,7 @@ const Question = () => {
       <div className="d-flex justify-content-between align-items-center mt-4">
         <h2 className="fw-bold">Question List</h2>
         <button
-          className="btn btn-primary px-3 py-2"
+          className="btn btn-primary"
           onClick={() => {
             resetModal();
             setShowModal(true);
@@ -214,25 +239,21 @@ const Question = () => {
       </div>
 
       {message && (
-        <div className={`alert ${getAlertClass()} mt-3`} role="alert">
-          {message}
-        </div>
+        <div className={`alert ${getAlertClass()} mt-3`}>{message}</div>
       )}
 
       <div className="table-responsive mt-4">
         {isLoading ? (
           <div className="text-center py-5">
-            <div className="spinner-border text-primary" role="status">
-              <span className="visually-hidden">Loading...</span>
-            </div>
+            <div className="spinner-border text-primary" />
           </div>
         ) : (
           <table className="table text-center align-middle">
-            <thead style={{ backgroundColor: "#0d6efd", color: "white" }}>
+            <thead className="bg-primary text-white">
               <tr>
                 <th className="bg-primary text-white">ID</th>
                 <th className="bg-primary text-white">Question</th>
-                <th className="bg-primary text-white">Question Type</th>
+                <th className="bg-primary text-white">Type</th>
                 <th className="bg-primary text-white">Subject</th>
                 <th className="bg-primary text-white">Action</th>
               </tr>
@@ -240,23 +261,18 @@ const Question = () => {
             <tbody>
               {questions.length === 0 ? (
                 <tr>
-                  <td colSpan="5" className="text-center py-4">
-                    No questions found. Create your first question!
-                  </td>
+                  <td colSpan="5">No questions found</td>
                 </tr>
               ) : (
-                questions.map((q, index) => (
+                questions.map((q) => (
                   <tr key={q.id}>
-                    <td>{index + 1}</td>
-                    <td className="fw-semibold text-start">{q.question}</td>
-                    <td className="text-capitalize">{q.question_type}</td>
-                    <td className="text-capitalize">{q.subject}</td>
+                    <td>{q.subject?.id}</td>
+                    <td>{q.question}</td>
+                    <td>{q.subject?.question_type}</td>
+                    <td>{q.subject?.subject}</td>
                     <td>
-                      <button className="btn btn-sm btn-primary me-2 px-3">
-                        Update
-                      </button>
                       <button
-                        className="btn btn-sm btn-danger px-3"
+                        className="btn btn-danger btn-sm"
                         onClick={() => handleDeleteQuestion(q.id)}
                       >
                         Delete
@@ -280,41 +296,38 @@ const Question = () => {
             className="modal-dialog modal-dialog-centered"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="modal-content border-0 p-4">
+            <div className="modal-content p-4 rounded-4 border-0">
               <h4 className="text-center fw-bold mb-4">New question</h4>
 
-              {message && messageType === "error" && (
-                <div className="alert alert-danger" role="alert">
-                  {message}
-                </div>
-              )}
-
               <div className="mb-3">
-                <label className="form-label">Question:</label>
+                <label className="form-label fw-semibold">Question:</label>
                 <input
                   className="form-control"
                   value={question}
                   onChange={(e) => setQuestion(e.target.value)}
-                  placeholder="Enter your question"
                 />
               </div>
 
               <div className="mb-3">
-                <label className="form-label">Subject:</label>
+                <label className="form-label fw-semibold">Subject:</label>
                 <select
                   className="form-select"
                   value={selectedSubjectId}
                   onChange={(e) => setSelectedSubjectId(e.target.value)}
                 >
                   <option value="">Select Subject</option>
-                  <option value="1">Science</option>
-                  <option value="2">Math</option>
-                  <option value="3">History</option>
+                  {subjects.map((s) => (
+                    <option key={s.id} value={s.id}>
+                      {s.subject}
+                    </option>
+                  ))}
                 </select>
               </div>
 
               <div className="mb-3">
-                <label className="form-label">Choose question type:</label>
+                <label className="form-label fw-semibold">
+                  Choose question type:
+                </label>
                 <div className="d-flex gap-2">
                   {[
                     { value: "multiple_choice", label: "Multiple Choice" },
@@ -337,52 +350,58 @@ const Question = () => {
                 </div>
               </div>
 
-              <div className="mb-3">
-                <label className="form-label">Correct Answer</label>
-                <input
-                  className="form-control"
-                  style={{ maxWidth: "150px" }}
-                  value={answer}
-                  onChange={(e) => setAnswer(e.target.value)}
-                  placeholder="e.g., a, b, c, d"
-                />
-              </div>
-
-              <div className="mb-4">
-                <label className="form-label">Choices</label>
-                {choices.map((choice, index) => (
-                  <div
-                    key={choice.question_choice}
-                    className="d-flex gap-2 mb-2"
-                  >
-                    <input
-                      className="form-control text-center"
-                      style={{ maxWidth: "60px" }}
-                      value={choice.question_choice}
-                      disabled
-                    />
+              {questionType === "multiple_choice" && (
+                <>
+                  <div className="mb-3">
+                    <label className="form-label fw-semibold">
+                      Correct Answer
+                    </label>
                     <input
                       className="form-control"
-                      value={choice.question_text}
-                      onChange={(e) =>
-                        handleChoiceChange(index, e.target.value)
-                      }
-                      placeholder={`Enter choice ${choice.question_choice}`}
+                      style={{ maxWidth: "120px" }}
+                      value={answer}
+                      onChange={(e) => setAnswer(e.target.value)}
+                      placeholder="d"
                     />
                   </div>
-                ))}
-              </div>
 
-              <div className="d-flex justify-content-center gap-3">
+                  <div className="mb-4">
+                    <label className="form-label fw-semibold">Choices</label>
+                    {choices.map((choice, index) => (
+                      <div
+                        key={choice.question_choice}
+                        className="d-flex align-items-center gap-2 mb-2"
+                      >
+                        <input
+                          className="form-control text-center"
+                          style={{ width: "50px" }}
+                          value={choice.question_choice}
+                          disabled
+                        />
+                        <input
+                          className="form-control"
+                          value={choice.question_text}
+                          onChange={(e) =>
+                            handleChoiceChange(index, e.target.value)
+                          }
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </>
+              )}
+
+              <div className="d-flex justify-content-center gap-3 mt-4">
                 <button
-                  className="btn btn-primary px-5 py-2 text-uppercase fw-bold"
+                  className="btn btn-primary px-5 py-2 fw-bold"
                   onClick={handleSaveQuestion}
                   disabled={isSaving}
                 >
                   {isSaving ? "SAVING..." : "SAVE"}
                 </button>
+
                 <button
-                  className="btn btn-danger px-5 py-2 text-uppercase fw-bold"
+                  className="btn btn-danger px-5 py-2 fw-bold"
                   onClick={() => {
                     setShowModal(false);
                     resetModal();

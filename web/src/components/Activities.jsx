@@ -22,24 +22,20 @@ const Activities = () => {
     const authToken = localStorage.getItem("authToken");
 
     if (!authToken) {
-      setMessage("Unauthorized");
       navigate("/");
       return;
     }
 
     const fetchActivity = async () => {
       try {
-        const response = await fetch("http://127.0.0.1:8000/api/v1/dashboard", {
+        const response = await fetch("http://127.0.0.1:8000/api/v1/activity", {
           method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${authToken}`,
-          },
+          headers: { Authorization: `Bearer ${authToken}` },
         });
 
+        const data = await response.json();
         if (!response.ok) throw new Error();
 
-        const data = await response.json();
         setActivity(data.data);
       } catch {
         setError("Failed to load activities");
@@ -51,21 +47,14 @@ const Activities = () => {
     const fetchSubjects = async () => {
       try {
         const response = await fetch("http://127.0.0.1:8000/api/v1/subject", {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${authToken}`,
-          },
+          headers: { Authorization: `Bearer ${authToken}` },
         });
 
+        const data = await response.json();
         if (!response.ok) throw new Error();
 
-        const data = await response.json();
         setSubjects(data.data || []);
-
-        if (data.data?.length) {
-          setSubject(data.data[0].id);
-        }
+        if (data.data?.length) setSubject(data.data[0].id);
       } catch {
         setError("Failed to load subjects");
       }
@@ -75,33 +64,47 @@ const Activities = () => {
     fetchSubjects();
   }, [navigate]);
 
-  const createActivity = async () => {
-    const authToken = localStorage.getItem("authToken");
+  const createActivity = async (e) => {
+    e.preventDefault();
 
-    if (!authToken) {
+    if (!title || !items || !startTime || !endTime) {
+      setError("All fields are required.");
+      return;
+    }
+
+    if (new Date(endTime) <= new Date(startTime)) {
+      setError("Ending time must be after starting time.");
+      return;
+    }
+
+    const authToken = localStorage.getItem("authToken");
+    const userID = localStorage.getItem("id");
+
+    if (!authToken || !userID) {
       navigate("/");
       return;
     }
+
     try {
       const response = await fetch("http://127.0.0.1:8000/api/v1/activity", {
         method: "POST",
         headers: {
-          "Content-type": "application/json",
+          "Content-Type": "application/json",
           Authorization: `Bearer ${authToken}`,
         },
         body: JSON.stringify({
-          title: title,
-          subject: subject,
-          items: items,
+          user_id: Number(userID),
+          activity_title: title,
+          items: Number(items),
           time_started: startTime,
           time_ended: endTime,
+          activity_action: "not_start",
         }),
       });
 
       const data = await response.json();
-
       if (!response.ok)
-        throw new error(data.message || "Failed To create Activity");
+        throw new Error(data.message || "Failed to create activity");
 
       setMessage("Activity created successfully");
       setActivityModal(false);
@@ -109,6 +112,7 @@ const Activities = () => {
       setItems("");
       setStartTime("");
       setEndTime("");
+      setError("");
     } catch (err) {
       setError(err.message);
     }
@@ -116,6 +120,16 @@ const Activities = () => {
 
   return (
     <div className="container mt-4">
+      {message && (
+        <div>
+          <p>{message}</p>
+        </div>
+      )}
+      {error && (
+        <div>
+          <p>{error}</p>
+        </div>
+      )}
       <div className="d-flex justify-content-between align-items-center p-3">
         <h2 className="m-0">Activity List</h2>
         <button
@@ -225,24 +239,27 @@ const Activities = () => {
         <div className="text-center py-5">
           <div className="spinner-border text-primary" role="status" />
         </div>
-      ) : activity ? (
-        <div className="d-flex justify-content-between align-items-center border rounded-4 p-3 mt-3 bg-white shadow-sm flex-wrap text-center">
-          <p className="fw-bold mb-0 flex-fill">{activity.activity_title}</p>
-          <p className="mb-0 flex-fill">
-            {activity.score}/{activity.total_score}
-          </p>
-          <p className="mb-0 flex-fill">{activity.time_started}</p>
-          <p className="mb-0 flex-fill">{activity.time_ended}</p>
-          <button
-            className="bg-white border-0 fw-bold"
-            style={{ color: "#08CB00" }}
-            onClick={() => setShowModalStart(true)}
-          >
-            Started
-          </button>
-        </div>
       ) : (
-        <p className="text-center text-danger mt-4">{error || message}</p>
+        activity.map((act) => (
+          <div
+            key={act.id}
+            className="d-flex justify-content-between align-items-center border rounded-4 p-3 mt-3 bg-white shadow-sm flex-wrap text-center"
+          >
+            <p className="fw-bold mb-0 flex-fill">{act.activity_title || "Untitled"}</p>
+            <p className="mb-0 flex-fill">
+              {act.score || 0}/{act.total_score || 20}
+            </p>
+            <p className="mb-0 flex-fill">{act.time_started}</p>
+            <p className="mb-0 flex-fill">{act.time_ended}</p>
+            <button
+              className="bg-white border-0 fw-bold"
+              style={{ color: "#08CB00" }}
+              onClick={() => setShowModalStart(true)}
+            >
+              Started
+            </button>
+          </div>
+        ))
       )}
 
       {showModalStart && (

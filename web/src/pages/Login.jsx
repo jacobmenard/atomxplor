@@ -10,18 +10,14 @@ const Login = () => {
   const [token, setToken] = useState("");
 
   const navigate = useNavigate();
-  const authToken = localStorage.getItem("authToken");
 
-  if(authToken) {
-    navigate("/dashboard");
-  }
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
     setMessage("");
     setLoading(true);
 
-    const API_ENDPOINT = "http://localhost:8000/api/login"; 
+    const API_ENDPOINT = "http://localhost:8000/api/login";
 
     try {
       const response = await fetch(API_ENDPOINT, {
@@ -40,7 +36,7 @@ const Login = () => {
 
       if (response.ok) {
         localStorage.setItem("authToken", data.token);
-        localStorage.setItem("userId", data.user.id);
+        localStorage.setItem("id", data.id);
 
         setToken(data.token);
         setMessage(data.message || "Login Successfully");
@@ -78,7 +74,6 @@ const Login = () => {
               Teacher Login
             </h3>
 
-            {error && <div className="alert alert-danger">{error}</div>}
             {message && <div className="alert alert-success">{message}</div>}
 
             <form onSubmit={handleSubmit}>
@@ -109,6 +104,7 @@ const Login = () => {
                   required
                 />
               </div>
+              {error && <div className="alert alert-danger">{error}</div>}
 
               <button
                 type="submit"
