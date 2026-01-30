@@ -145,4 +145,18 @@ class ActivityController extends Controller
     {
         //
     }
+
+    public function getObject($id, Activity $activity) {
+        try {
+            $activityObject = $activity->find($id);
+
+            if ($activityObject) {
+                return success(new ActivityResources($activityObject), 'Activity found');
+            } else {
+                return error(null, 'Activity not found');
+            }
+        } catch (\Exception $e) {
+            return error(null, $e->getMessage());
+        }
+    }
 }
