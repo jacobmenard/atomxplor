@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Activity;
 use App\Models\Question;
 use App\Models\Questionaire;
+use App\Models\ActivityParticipant;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Requests\ActivityRequest;
@@ -109,9 +110,16 @@ class ActivityController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Activity $activity)
+    public function show($id, Activity $activity)
     {
         //
+        $activityObject = $activity->find($id);
+
+        if ($activityObject) {
+            return success(new ActivityResources($activityObject), 'Activity found');
+        } else {
+            return error(null, 'Activity not found');
+        }
     }
 
     /**
