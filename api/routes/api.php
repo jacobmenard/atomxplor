@@ -40,7 +40,8 @@ Route::prefix('v1')->group(function () {
 
     Route::prefix('activity')->group(function() {
         Route::post('/{id}/submit-answer', [AnswerController::class, 'answer']);
-        Route::get('/{id}/check-already-answ    ered', [ActivityParticipantController::class, 'checkAlreadyAnswered']);
+        Route::get('/{id}/check-already-answered', [ActivityParticipantController::class, 'checkAlreadyAnswered']);
+        Route::get('/get-object/{id}', [ActivityController::class, 'getObject']);
     });
     
     Route::resource('/grade-level', GradeLevelController::class);
