@@ -25,6 +25,8 @@ use App\Http\Controllers\ActivityParticipantController;
 */
 
 Route::post('/login', [AuthController::class, 'login']);
+Route::post('/logout', [AuthController::class, 'logout']);
+Route::post('/login-using-id', [AuthController::class, 'loginUsingID']);
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return new UserResource($request->user());
