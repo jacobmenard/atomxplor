@@ -7,6 +7,7 @@ import Index from "./components";
 import Public from "./pages/Public";
 import Question from "./components/Question";
 import ActivitiesQuestions from "./components/ActivitiesQuestion";
+import Students from "./components/Students";
 
 function App() {
   return (
@@ -18,6 +19,7 @@ function App() {
           <Route path="index" element={<Index />} />
           <Route path="activities" element={<Activities />} />
           <Route path="questions" element={<Question />} />
+          <Route path="students" element={<Students />} />
         </Route>
         <Route path="/public" element={<Public />} />
         <Route path="/activity/question" element={<ActivitiesQuestions />} />

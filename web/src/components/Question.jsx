@@ -251,9 +251,9 @@ const Question = () => {
           <table className="table text-center align-middle">
             <thead className="bg-primary text-white">
               <tr>
-                <th className="bg-primary text-white">ID</th>
+                <th className="bg-primary text-white text-start">ID</th>
                 <th className="bg-primary text-white">Question</th>
-                <th className="bg-primary text-white">Type</th>
+                <th className="bg-primary text-white"> Question Type</th>
                 <th className="bg-primary text-white">Subject</th>
                 <th className="bg-primary text-white">Action</th>
               </tr>
@@ -266,17 +266,22 @@ const Question = () => {
               ) : (
                 questions.map((q) => (
                   <tr key={q.id}>
-                    <td>{q.subject?.id}</td>
+                    <td className="text-start">{q.subject?.id}</td>
                     <td>{q.question}</td>
                     <td>{q.subject?.question_type}</td>
                     <td>{q.subject?.subject}</td>
                     <td>
-                      <button
-                        className="btn btn-danger btn-sm"
-                        onClick={() => handleDeleteQuestion(q.id)}
-                      >
-                        Delete
-                      </button>
+                      <div className="d-flex justify-content-center gap-2">
+                        <button className="btn btn-primary btn-sm">
+                          Update
+                        </button>
+                        <button
+                          className="btn btn-danger btn-sm"
+                          onClick={() => handleDeleteQuestion(q.id)}
+                        >
+                          Delete
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))

@@ -1,19 +1,20 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import {useNavigate } from "react-router-dom";
 
 const Public = () => {
   const [showModal, setShowModal] = useState(false);
   const [activityCode, setActivityCode] = useState("");
   const [activity, setActivity] = useState([]);
   const [message, setMessage] = useState("");
+  const [checkAnswerModal, setCheckAnswerModal] = useState(false);
+  const [selectedActivity, setSelectedActivity] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [studentLoginModal, setStudentLoginModal] = useState(false);
+
+  const [fullName, setFullName] = useState("");
+  const [studentId, setStudentId] = useState("");
 
   const navigate = useNavigate();
-
-  const navigatorToQuestion = (item) => {
-    navigate("/activity/question", {
-      state: {activity: item}
-    });
-  };
 
   useEffect(() => {
     const authToken = localStorage.getItem("authToken");
@@ -37,19 +38,92 @@ const Public = () => {
         );
 
         const data = await response.json();
-
-        if (!response.ok) {
-          throw new Error(data.message || "Failed to fetch Activity");
-        }
+        if (!response.ok) throw new Error();
 
         setActivity(data.data || []);
-      } catch (err) {
-        setMessage("Failed to load activities", err);
+      } catch {
+        setMessage("Failed to load activities");
+      } finally {
+        setIsLoading(false);
       }
     };
 
     fetchActivity();
   }, [navigate]);
+
+  const studentSignIn = async () => {
+    const authToken = localStorage.getItem("authToken");
+    if (!authToken) return navigate("/");
+
+    setIsLoading(true);
+
+    try {
+      const response = await fetch(
+        "http://127.0.0.1:8000/api/v1/student-login",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${authToken}`,
+          },
+          body: JSON.stringify({
+            full_name: fullName,
+            student_id_number: studentId,
+          }),
+        }
+      );
+
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.message);
+
+      setStudentLoginModal(false);
+      navigatorToQuestion(selectedActivity);
+    } catch (error) {
+      setMessage(error.message || "Login failed");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const navigatorToQuestion = async (item) => {
+    const authToken = localStorage.getItem("authToken");
+
+    setSelectedActivity(item);
+    setIsLoading(true);
+    setCheckAnswerModal(true);
+    setMessage("");
+
+    try {
+      const response = await fetch(
+        `http://127.0.0.1:8000/api/v1/activity/${item.id}/check-already-answered`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${authToken}`,
+          },
+        }
+      );
+
+      const data = await response.json();
+
+      setTimeout(() => {
+        setMessage(data.message);
+        setIsLoading(false);
+      }, 2000);
+
+      setTimeout(() => {
+        navigate("/activity/question", {
+          state: { activity: item },
+        });
+      }, 4000);
+    } catch {
+      setTimeout(() => {
+        setMessage("Something went wrong");
+        setIsLoading(false);
+      }, 3000);
+    }
+  };
 
   const handleSearch = () => {
     console.log("Searching:", activityCode);
@@ -63,8 +137,6 @@ const Public = () => {
         </button>
       </div>
 
-      {message && <h5 className="text-success mb-3">{message}</h5>}
-
       <div className="mb-2">
         <h2 className="ms-3">Welcome Students</h2>
       </div>
@@ -73,40 +145,49 @@ const Public = () => {
         className="d-flex flex-wrap gap-3"
         style={{ marginLeft: "100px", marginRight: "50px" }}
       >
-        {activity.map((item, index) => (
-          <div
-            key={index}
-            className="border p-3 rounded-4 bg-white shadow-sm"
-            style={{ width: "300px" }}
-          >
-            <p className="fw-bold mb-2">Example Activity</p>
-            <p className="mb-2">By: {item.user?.name}</p>
-
-            <div className="d-flex justify-content-between fw-semibold mb-3">
-              <span>Total Students:</span>
-              <span className="fw-bold" style={{ color: "#08CB00" }}>
-                0/20
-              </span>
-            </div>
-
-            <button
-              className="text-white fw-bold border-0 rounded mb-3"
-              style={{ backgroundColor: "#08CB00" }}
-              disabled={item.activity_action}
-            >
-              {item.activity_action}
-            </button>
-
-            <div className="d-grid">
-              <button
-                className="btn btn-primary fw-bold btn-opacity-hover"
-                onClick={() => navigatorToQuestion(item)}
-              >
-                Enter Activity
-              </button>
-            </div>
+        {isLoading ? (
+          <div className="w-100 text-center py-5">
+            <div className="spinner-border text-primary" />
           </div>
-        ))}
+        ) : (
+          activity.map((item, index) => (
+            <div
+              key={index}
+              className="border p-3 rounded-4 bg-white shadow-sm"
+              style={{ width: "300px" }}
+            >
+              <p className="fw-bold mb-2">Example Activity</p>
+              <p className="mb-2">By: {item.user?.name}</p>
+
+              <div className="d-flex justify-content-between fw-semibold mb-3">
+                <span>Total Students:</span>
+                <span className="fw-bold" style={{ color: "#08CB00" }}>
+                  0/20
+                </span>
+              </div>
+
+              <button
+                className="text-white fw-bold border-0 rounded mb-3"
+                style={{ backgroundColor: "#08CB00" }}
+                disabled={item.activity_action}
+              >
+                {item.activity_action}
+              </button>
+
+              <div className="d-grid">
+                <button
+                  className="btn btn-primary fw-bold"
+                  onClick={() => {
+                    setSelectedActivity(item);
+                    setStudentLoginModal(true);
+                  }}
+                >
+                  Enter Activity
+                </button>
+              </div>
+            </div>
+          ))
+        )}
       </div>
 
       {showModal && (
@@ -141,6 +222,77 @@ const Public = () => {
               >
                 Cancel
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {studentLoginModal && (
+        <div
+          className="position-fixed top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center"
+          style={{ backgroundColor: "rgba(0,0,0,0.5)", zIndex: 9999 }}
+        >
+          <div
+            className="bg-white rounded-4 p-4 shadow"
+            style={{ width: "420px" }}
+          >
+            <h5 className="text-center fw-bold mb-3">Enter Full name</h5>
+
+            <input
+              type="text"
+              className="form-control text-center mb-3"
+              value={fullName}
+              onChange={(e) => setFullName(e.target.value)}
+            />
+
+            <h6 className="text-center fw-bold mb-2">Student ID</h6>
+
+            <input
+              type="text"
+              className="form-control text-center mb-4"
+              value={studentId}
+              onChange={(e) => setStudentId(e.target.value)}
+            />
+
+            <div className="d-flex justify-content-center gap-3">
+              <button
+                className="btn btn-primary px-4"
+                onClick={studentSignIn}
+                disabled={isLoading}
+              >
+                Enter
+              </button>
+
+              <button
+                className="btn btn-danger px-4"
+                onClick={() => setStudentLoginModal(false)}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {checkAnswerModal && (
+        <div
+          className="modal fade show d-block"
+          tabIndex="-1"
+          style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
+        >
+          <div className="modal-dialog modal-dialog-centered">
+            <div className="modal-content p-4 text-center">
+              <h5 className="fw-bold mb-2 text-primary">Message alert!</h5>
+              {isLoading ? (
+                <div className="d-flex flex-column align-items-center justify-content-center py-4">
+                  <div
+                    className="spinner-border text-primary mb-3"
+                    role="status"
+                  />
+                </div>
+              ) : (
+                <p className="mb-0">{message}</p>
+              )}
             </div>
           </div>
         </div>

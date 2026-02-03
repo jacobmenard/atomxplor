@@ -9,19 +9,19 @@ const Index = () => {
     total_done_activities: 0,
     ongoing_activities: [],
   });
+  const [activity, setActivity] = useState([]);
 
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
   const [isLoading, setIsLoading] = useState(true);
-  const [showModal, setShowModal] = useState(false);
+  const [showModalStart, setShowModalStart] = useState(false);
 
   const navigate = useNavigate();
 
   useEffect(() => {
     const authToken = localStorage.getItem("authToken");
-    const userId = localStorage.getItem("userId");
 
-    if (!authToken || !userId) {
+    if (!authToken) {
       setError("Authentication token or user ID not found.");
       navigate("/");
       return;
@@ -59,25 +59,35 @@ const Index = () => {
         if (!response.ok) throw new Error("Failed to fetch user.");
 
         const data = await response.json();
-
-       
         setUser(data);
-        setMessage(""); 
+        setMessage("");
       } catch (err) {
         setError(err.message);
+      }
+    };
+
+    const fetchActivity = async () => {
+      try {
+        const response = await fetch("http://127.0.0.1:8000/api/v1/activity", {
+          method: "GET",
+          headers: { Authorization: `Bearer ${authToken}` },
+        });
+
+        const data = await response.json();
+        if (!response.ok) throw new Error();
+
+        setActivity(data.data || []);
+      } catch {
+        setError("Failed to load activities");
       } finally {
-        setTimeout(() => setIsLoading(false), 600);
+        setIsLoading(false);
       }
     };
 
     fetchUser();
     fetchDashboard();
+    fetchActivity();
   }, [navigate]);
-
-  const handleStartNow = () => {
-    setShowModal(false);
-    alert("Activity Started!");
-  };
 
   return (
     <div>
@@ -112,24 +122,28 @@ const Index = () => {
         <div className="mt-4">
           <h3 className="mb-3">List of Ongoing Activities</h3>
 
-          {dashboard.ongoing_activities.length === 0 ? (
-            <p>No ongoing activities.</p>
+          {isLoading ? (
+            <div className="text-center py-5">
+              <div className="spinner-border text-primary" role="status" />
+            </div>
           ) : (
-            dashboard.ongoing_activities.map((activity) => (
+            activity.map((act) => (
               <div
-                key={activity.id}
+                key={act.id}
                 className="d-flex justify-content-between align-items-center border rounded-4 p-3 mt-3 bg-white shadow-sm flex-wrap text-center"
               >
                 <p className="fw-bold mb-0 flex-fill">
-                  Activity #{activity.id}
+                  {act.activity_title || "Untitled"}
                 </p>
-                <p className="mb-0 flex-fill">{activity.items} Items</p>
-                <p className="mb-0 flex-fill">{activity.time_started}</p>
-                <p className="mb-0 flex-fill">{activity.time_ended}</p>
+                <p className="mb-0 flex-fill">
+                  {act.score || 0}/{act.total_score || 20}
+                </p>
+                <p className="mb-0 flex-fill">{act.time_started}</p>
+                <p className="mb-0 flex-fill">{act.time_ended}</p>
                 <button
                   className="bg-white border-0 fw-bold"
                   style={{ color: "#08CB00" }}
-                  onClick={() => setShowModal(true)}
+                  onClick={() => setShowModalStart(true)}
                 >
                   Started
                 </button>
@@ -138,7 +152,7 @@ const Index = () => {
           )}
         </div>
 
-        {showModal && (
+        {showModalStart && (
           <div
             className="modal fade show d-block"
             tabIndex="-1"
@@ -146,31 +160,13 @@ const Index = () => {
           >
             <div className="modal-dialog modal-dialog-centered">
               <div className="modal-content p-4 text-center">
-                <div className="mb-3">
-                  <div
-                    style={{
-                      width: "60px",
-                      height: "60px",
-                      margin: "0 auto",
-                      borderRadius: "50%",
-                      backgroundColor: "#2196F3",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                    }}
-                  >
-                    <span style={{ color: "white", fontSize: "30px" }}>i</span>
-                  </div>
-                </div>
                 <h5 className="fw-bold mb-2">Message alert!</h5>
                 <p className="mb-4">Do you want to start the activity?</p>
                 <div className="d-flex justify-content-center gap-3">
-                  <button className="btn btn-primary" onClick={handleStartNow}>
-                    Yes, start now
-                  </button>
+                  <button className="btn btn-primary">Yes, start now</button>
                   <button
                     className="btn btn-danger"
-                    onClick={() => setShowModal(false)}
+                    onClick={() => setShowModalStart(false)}
                   >
                     No, not yet
                   </button>

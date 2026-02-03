@@ -85,6 +85,16 @@ const Dashboard = () => {
                   label: "Questions",
                   path: "questions",
                 },
+                {
+                  icon: "bi-user-circle",
+                  label: "Students",
+                  path: "students",
+                },
+                {
+                  icon: "bi-question-circle",
+                  label: "Grade Levels",
+                  path: "grade-level",
+                },
               ].map((item, idx) => (
                 <li key={idx} className="nav-item mb-2">
                   <Link
