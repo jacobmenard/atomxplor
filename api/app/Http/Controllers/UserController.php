@@ -45,7 +45,7 @@ class UserController extends Controller
             [
                 'name' => $fullName,
                 'email' => $request->student_id_number. strtolower($trimName) . '@student.com',
-                'password' => bcrypt(trim($request->first_name)),
+                'password' => bcrypt(123456),
                 'student_id_number' => $request->student_id_number,
                 'role' => 'student',
             ]
