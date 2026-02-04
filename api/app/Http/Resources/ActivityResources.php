@@ -24,8 +24,7 @@ class ActivityResources extends JsonResource
             'activity_action' => $this->activity_action,
             'questionaires' => QuestionaireResource::collection($this->questionaires),
             'created_at' => $this->created_at,
-            'updated_at' => $this->updated_at,
-
+            'updated_at' => $this->updated_at
         ];
     }
 }
