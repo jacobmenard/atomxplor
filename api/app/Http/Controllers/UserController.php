@@ -14,7 +14,7 @@ class UserController extends Controller
     public function studentList(Request $request, User $user, UserProfile $userProfile) {
         $search = $request->search;
         $students = $user->with('user_profile')
-                    ->where('role', 'like', '%%')
+                    ->where('role', 'student')
                     ->whereHas('user_profile', function ($query) use ($search) {
                         $query->where('first_name', 'like', '%' . $search . '%')
                             ->orWhere('last_name', 'like', '%' . $search . '%');
