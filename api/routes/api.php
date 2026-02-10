@@ -35,6 +35,10 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 Route::prefix('v1')->group(function () {
     Route::middleware('auth:sanctum')->group(function() {
     Route::resource('/activity', ActivityController::class);
+    Route::prefix('/activities')->group(function () {
+        Route::get('/student-participants-list', [ActivityController::class, 'studentParticipantsList']);
+        Route::put('/student-participants-action', [ActivityController::class, 'studentParticipantsAction']);
+    });
     Route::resource('/question', QuestionController::class);
     Route::resource('/subject', SubjectsController::class);
 

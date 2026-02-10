@@ -5,6 +5,7 @@ namespace App\Http\Resources;
 use Illuminate\Http\Request;
 use App\Http\Resources\QuestionaireResource;
 use Illuminate\Http\Resources\Json\JsonResource;
+use App\Models\ActivityParticipant;
 
 class ActivityResources extends JsonResource
 {
@@ -24,7 +25,16 @@ class ActivityResources extends JsonResource
             'activity_action' => $this->activity_action,
             'questionaires' => QuestionaireResource::collection($this->questionaires),
             'created_at' => $this->created_at,
-            'updated_at' => $this->updated_at
+            'updated_at' => $this->updated_at,
+            'student_participants' => $this->student_participants($this->id),
         ];
     }
+
+    public function student_participants($id) {
+        $participants = ActivityParticipant::where('activity_id', $id)->count();
+
+        return $participants;
+    }
+
+    
 }
