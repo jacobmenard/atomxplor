@@ -5,11 +5,12 @@ namespace App\Http\Controllers;
 use App\Models\Activity;
 use App\Models\Question;
 use App\Models\Questionaire;
-use App\Models\ActivityParticipant;
 use Illuminate\Http\Request;
+use App\Models\ActivityParticipant;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Requests\ActivityRequest;
 use App\Http\Resources\ActivityResources;
+use App\Http\Resources\ActivityParticipantResource;
 
 class ActivityController extends Controller
 {
@@ -155,6 +156,32 @@ class ActivityController extends Controller
             } else {
                 return error(null, 'Activity not found');
             }
+        } catch (\Exception $e) {
+            return error(null, $e->getMessage());
+        }
+    }
+
+    public function studentParticipantsList(Request $request, ActivityParticipant $activityParticipant) {
+        try {
+            $students = $activityParticipant->where('activity_id', $request->activity)->get();
+
+            return success(ActivityParticipantResource::collection($students), 'Students found');
+        } catch (\Exception $e) {
+            return error(null, $e->getMessage());
+        }
+    }
+
+    public function studentParticipantsAction(Request $request, Activity $activity) {
+        try {
+            $action = '';
+            if ($request->activity_action == '') {
+                return error(null, 'Action is required');
+            }
+            $activity->where('id', $request->activity_id)->update([
+                'activity_action' => $request->activity_action
+            ]);
+
+            return success(null, 'Activity action updated');
         } catch (\Exception $e) {
             return error(null, $e->getMessage());
         }
