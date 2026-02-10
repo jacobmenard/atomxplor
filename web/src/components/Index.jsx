@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 const Index = () => {
-  const [user, setUser] = useState({});
+  const [user, setUser] = useState(null);
   const [dashboard, setDashboard] = useState({
     total_activities: 0,
     total_ongoing_activities: 0,
@@ -46,6 +46,7 @@ const Index = () => {
       }
     };
 
+    // ✅ FIXED FETCH USER (ONLY LOGIC CHANGE)
     const fetchUser = async () => {
       try {
         const response = await fetch("http://127.0.0.1:8000/api/user", {
@@ -58,8 +59,8 @@ const Index = () => {
 
         if (!response.ok) throw new Error("Failed to fetch user.");
 
-        const data = await response.json();
-        setUser(data);
+        const result = await response.json();
+        setUser(result?.data || null); // ✅ correct extraction
         setMessage("");
       } catch (err) {
         setError(err.message);
@@ -97,7 +98,7 @@ const Index = () => {
         {isLoading ? (
           <h5>Loading user data...</h5>
         ) : (
-          <h2>Welcome back, {user?.name || "User"}!</h2>
+          <h2>Welcome back, {user.name || "User"}!</h2>
         )}
 
         <div className="d-flex flex-row gap-2 mt-3 flex-wrap">

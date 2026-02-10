@@ -36,7 +36,7 @@ const Login = () => {
 
       if (response.ok) {
         localStorage.setItem("authToken", data.token);
-
+        localStorage.setItem("username",data.name);
         setToken(data.token);
         setMessage(data.message || "Login Successfully");
         console.log("Login Successfully");

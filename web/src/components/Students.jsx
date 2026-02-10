@@ -38,7 +38,7 @@ const Students = () => {
             last_name: lastName,
             gender: gender,
             grade_level_id: Number(gradeId),
-            student_id_number: studentIdNumber,
+            student_id_number: Number(studentIdNumber),
           }),
         }
       );
@@ -207,7 +207,7 @@ const Students = () => {
                   Student ID Number:
                 </label>
                 <input
-                  type="text"
+                  type="number"
                   className="form-control"
                   value={studentIdNumber}
                   onChange={(e) => setStudentIdNumber(e.target.value)}

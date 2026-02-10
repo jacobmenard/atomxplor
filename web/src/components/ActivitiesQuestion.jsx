@@ -1,163 +1,150 @@
 import React, { useEffect, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 
 const ActivityQuestion = () => {
   const { state } = useLocation();
   const navigate = useNavigate();
-  const activity = state?.activity;
 
+  const activityId = state?.activityId;
+  const studentToken = localStorage.getItem("studentToken");
+
+  const [activity, setActivity] = useState(null);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [answers, setAnswers] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // ✅ NEW STATES
   const [result, setResult] = useState(null);
+  const [isFinished, setIsFinished] = useState(false);
 
   useEffect(() => {
-    if (!activity) navigate("/public");
-  }, [activity, navigate]);
-
-  if (!activity) return null;
-
-  const currentQuestion = activity.questionaires?.[currentIndex]?.question;
-  const isLastQuestion = currentIndex === activity.questionaires.length - 1;
-
-  const handleNext = () => {
-    if (!isLastQuestion) {
-      setCurrentIndex((prev) => prev + 1);
+    if (!activityId || !studentToken) {
+      navigate("/public");
+      return;
     }
-  };
+
+    const fetchActivity = async () => {
+      try {
+        const response = await fetch(
+          `http://127.0.0.1:8000/api/v1/activity/get-object/${activityId}`,
+          {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${studentToken}`,
+            },
+          }
+        );
+
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.message);
+
+        setActivity(data.data);
+      } catch {
+        navigate("/public");
+      }
+    };
+
+    fetchActivity();
+  }, [activityId, studentToken, navigate]);
+
+  const currentQuestion = activity?.questionaires?.[currentIndex]?.question;
+  const isLastQuestion = currentIndex === activity?.questionaires?.length - 1;
 
   const handleSubmit = async () => {
-    const authToken = localStorage.getItem("authToken");
-    if (!authToken) return navigate("/");
-
     setIsSubmitting(true);
 
     const payload = {
-      answers: Object.entries(answers).map(([questionId, optionId]) => {
-        const question = activity.questionaires.find(
-          (q) => q.question.id === Number(questionId)
-        );
-
-        const selectedOption = question.question.question_items.find(
-          (item) => item.id === optionId
-        );
-
-        return {
-          question_id: Number(questionId),
-          user_answer: selectedOption.question_choice.toLowerCase(),
-        };
-      }),
+      answers: activity.questionaires.map((q) => ({
+        question_id: q.question.id,
+        correct_answer: q.question.answer,
+        user_answer: answers[q.question.id] || null,
+      })),
     };
 
     try {
       const response = await fetch(
-        `http://127.0.0.1:8000/api/v1/activity/${activity.id}/submit-answer`,
+        `http://127.0.0.1:8000/api/v1/activity/${activityId}/submit-answer`,
         {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${authToken}`,
+            Authorization: `Bearer ${studentToken}`,
           },
           body: JSON.stringify(payload),
         }
       );
 
       const data = await response.json();
-      if (!response.ok) throw new Error();
+      if (!response.ok) throw new Error(data.message);
 
-      setResult({
-        score: data.score,
-        total: data.total,
-        percentage: data.percentage,
-        answers: data.answers,
-      });
-    } catch {
-      alert("Failed to submit answers");
+      setResult(data.data);
+      setIsFinished(true);
+    } catch (error) {
+      console.log(error.message);
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  if (result) {
-    return (
-      <div className="container-fluid px-5 py-4">
-        <div className="d-flex justify-content-between align-items-start mb-5">
-          <div>
-            <h4 className="fw-bold">Welcome Student</h4>
-            <p className="mb-1 fw-semibold">
-              Activity title:{" "}
-              <span className="fw-normal">{activity.activity_title}</span>
-            </p>
-            <small className="text-muted">
-              Hosted by: {activity.user?.name || "Teacher unknown"}
-            </small>
-          </div>
-
-          <div className="text-end">
-            <p className="mb-1 fw-semibold">Duration: 10–20 minutes</p>
-            <p className="fw-semibold">
-              Status: <span className="text-success">Started</span>
-            </p>
-          </div>
-        </div>
-
-        <div className="text-center mt-5">
-          <h2 className="fw-bold mb-4">CONGRATULATIONS YOU GOT</h2>
-
-          <h3 className="fw-bold mb-2">
-            {result.score}/{result.total} Score
-          </h3>
-
-          <h3 className="fw-bold mb-4">{result.percentage}%</h3>
-
-          <button className="btn btn-primary px-4">Review my answers</button>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="container-fluid px-5 py-4">
+    <div className="container-fluid px-5 py-4 activity-wrapper">
       <div className="d-flex justify-content-between align-items-start mb-5">
         <div>
-          <h4 className="fw-bold">Welcome Student</h4>
-          <p className="mb-1 fw-semibold">
-            Activity title:{" "}
-            <span className="fw-normal">
-              {activity.activity_title || "Untitled Activity"}
-            </span>
-          </p>
+          <h4 className="fw-bold mb-1">Welcome Student</h4>
+          <p className="mb-0 fw-semibold">Activity title: {activity?.title}</p>
           <small className="text-muted">
-            Hosted by: {activity.user?.name || "Teacher unknown"}
+            Hosted by: {activity?.user.name || "Teacher unknown"}
           </small>
         </div>
 
         <div className="text-end">
-          <p className="mb-1 fw-semibold">Duration: 10–20 minutes</p>
-          <p className="fw-semibold">
-            Status:{" "}
-            <span className="text-success">{activity.activity_action}</span>
+          <p className="mb-1 fw-semibold">
+            Duration: {activity?.duration || "10–20 minutes"}
+          </p>
+          <p className="mb-0 fw-semibold">
+            Status: <span className="text-success">Started</span>
           </p>
         </div>
       </div>
 
-      {currentQuestion && (
-        <div className="mb-5">
+      {isFinished && result && (
+        <div className="text-center mt-5">
+          <h1 className="fw-bold mb-4">CONGRATULATIONS YOU GOT</h1>
+
+          <h2 className="fw-bold">
+            {result.correct}/{result.total} Score
+          </h2>
+
+          <h3 className="fw-semibold text-muted mb-4">
+            {Math.round((result.correct / result.total) * 100)}%
+          </h3>
+
+          <button
+            className="btn btn-primary px-5"
+            onClick={() => navigate("/public")}
+          >
+            Go to activity list
+          </button>
+        </div>
+      )}
+
+      {!isFinished && currentQuestion && (
+        <div className="question-card mb-5">
           <h5 className="fw-bold mb-4">
             Question #{currentIndex + 1}: {currentQuestion.question}
           </h5>
 
           {currentQuestion.question_items.map((opt) => (
-            <div key={opt.id} className="form-check mb-3">
+            <div key={opt.id} className="form-check option-item mb-3">
               <input
                 className="form-check-input"
                 type="radio"
                 name={`question-${currentQuestion.id}`}
-                checked={answers[currentQuestion.id] === opt.id}
+                checked={answers[currentQuestion.id] === opt.question_choice}
                 onChange={() =>
                   setAnswers({
                     ...answers,
-                    [currentQuestion.id]: opt.id,
+                    [currentQuestion.id]: opt.question_choice,
                   })
                 }
               />
@@ -169,25 +156,35 @@ const ActivityQuestion = () => {
         </div>
       )}
 
-      <div className="d-flex justify-content-end">
-        {!isLastQuestion ? (
+      {!isFinished && (
+        <div className="d-flex justify-content-between mt-5">
           <button
             className="btn btn-primary px-4"
-            onClick={handleNext}
-            disabled={!answers[currentQuestion?.id]}
+            onClick={() => setCurrentIndex((prev) => prev - 1)}
+            disabled={currentIndex === 0}
           >
-            Next
+            Previous
           </button>
-        ) : (
-          <button
-            className="btn btn-success px-4"
-            onClick={handleSubmit}
-            disabled={!answers[currentQuestion?.id] || isSubmitting}
-          >
-            {isSubmitting ? "Submitting..." : "Submit"}
-          </button>
-        )}
-      </div>
+
+          {!isLastQuestion ? (
+            <button
+              className="btn btn-primary px-4"
+              onClick={() => setCurrentIndex((prev) => prev + 1)}
+              disabled={!answers[currentQuestion?.id]}
+            >
+              Next
+            </button>
+          ) : (
+            <button
+              className="btn btn-primary px-4"
+              onClick={handleSubmit}
+              disabled={!answers[currentQuestion?.id] || isSubmitting}
+            >
+              {isSubmitting ? "Submitting..." : "Submit"}
+            </button>
+          )}
+        </div>
+      )}
     </div>
   );
 };

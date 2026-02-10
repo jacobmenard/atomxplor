@@ -1,9 +1,8 @@
 import React, { useEffect, useState } from "react";
-import {useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 const Public = () => {
   const [showModal, setShowModal] = useState(false);
-  const [activityCode, setActivityCode] = useState("");
   const [activity, setActivity] = useState([]);
   const [message, setMessage] = useState("");
   const [checkAnswerModal, setCheckAnswerModal] = useState(false);
@@ -11,14 +10,13 @@ const Public = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [studentLoginModal, setStudentLoginModal] = useState(false);
 
-  const [fullName, setFullName] = useState("");
+  const [password, setPassword] = useState("");
   const [studentId, setStudentId] = useState("");
 
   const navigate = useNavigate();
 
   useEffect(() => {
     const authToken = localStorage.getItem("authToken");
-
     if (!authToken) {
       navigate("/");
       return;
@@ -29,17 +27,13 @@ const Public = () => {
         const response = await fetch(
           "http://127.0.0.1:8000/api/v1/public/activity/list",
           {
-            method: "GET",
             headers: {
-              "Content-Type": "application/json",
               Authorization: `Bearer ${authToken}`,
             },
           }
         );
 
         const data = await response.json();
-        if (!response.ok) throw new Error();
-
         setActivity(data.data || []);
       } catch {
         setMessage("Failed to load activities");
@@ -58,25 +52,24 @@ const Public = () => {
     setIsLoading(true);
 
     try {
-      const response = await fetch(
-        "http://127.0.0.1:8000/api/v1/student-login",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${authToken}`,
-          },
-          body: JSON.stringify({
-            full_name: fullName,
-            student_id_number: studentId,
-          }),
-        }
-      );
+      const response = await fetch("http://127.0.0.1:8000/api/login-using-id", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${authToken}`,
+        },
+        body: JSON.stringify({
+          student_id_number: studentId,
+          password: password,
+        }),
+      });
 
       const data = await response.json();
       if (!response.ok) throw new Error(data.message);
 
+      localStorage.setItem("studentToken", data.token);
       setStudentLoginModal(false);
+
       navigatorToQuestion(selectedActivity);
     } catch (error) {
       setMessage(error.message || "Login failed");
@@ -87,8 +80,8 @@ const Public = () => {
 
   const navigatorToQuestion = async (item) => {
     const authToken = localStorage.getItem("authToken");
+    if (!authToken) return navigate("/");
 
-    setSelectedActivity(item);
     setIsLoading(true);
     setCheckAnswerModal(true);
     setMessage("");
@@ -97,9 +90,7 @@ const Public = () => {
       const response = await fetch(
         `http://127.0.0.1:8000/api/v1/activity/${item.id}/check-already-answered`,
         {
-          method: "GET",
           headers: {
-            "Content-Type": "application/json",
             Authorization: `Bearer ${authToken}`,
           },
         }
@@ -114,19 +105,12 @@ const Public = () => {
 
       setTimeout(() => {
         navigate("/activity/question", {
-          state: { activity: item },
+          state: { activityId: item.id }, // ✅ PASS ID HERE
         });
       }, 4000);
     } catch {
-      setTimeout(() => {
-        setMessage("Something went wrong");
-        setIsLoading(false);
-      }, 3000);
+      setMessage("Failed to enter activity");
     }
-  };
-
-  const handleSearch = () => {
-    console.log("Searching:", activityCode);
   };
 
   return (
@@ -146,7 +130,7 @@ const Public = () => {
         style={{ marginLeft: "100px", marginRight: "50px" }}
       >
         {isLoading ? (
-          <div className="w-100 text-center py-5">
+          <div className="text-center py-5">
             <div className="spinner-border text-primary" />
           </div>
         ) : (
@@ -190,43 +174,6 @@ const Public = () => {
         )}
       </div>
 
-      {showModal && (
-        <div
-          className="position-fixed top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center"
-          style={{ backgroundColor: "rgba(0,0,0,0.5)", zIndex: 9999 }}
-        >
-          <div className="bg-white rounded-4 p-4" style={{ width: "400px" }}>
-            <h5 className="text-center fw-bold mb-3">Enter Activity code</h5>
-
-            <input
-              type="text"
-              className="form-control text-center fs-5 py-2"
-              placeholder="Enter code"
-              value={activityCode}
-              onChange={(e) => setActivityCode(e.target.value)}
-            />
-
-            <div className="d-flex justify-content-center mt-4 gap-2">
-              <button
-                className="btn text-white px-4"
-                style={{ backgroundColor: "#007bff" }}
-                onClick={handleSearch}
-              >
-                Search
-              </button>
-
-              <button
-                className="btn text-white px-4"
-                style={{ backgroundColor: "#ff3b3b" }}
-                onClick={() => setShowModal(false)}
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
       {studentLoginModal && (
         <div
           className="position-fixed top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center"
@@ -236,22 +183,22 @@ const Public = () => {
             className="bg-white rounded-4 p-4 shadow"
             style={{ width: "420px" }}
           >
-            <h5 className="text-center fw-bold mb-3">Enter Full name</h5>
-
-            <input
-              type="text"
-              className="form-control text-center mb-3"
-              value={fullName}
-              onChange={(e) => setFullName(e.target.value)}
-            />
-
-            <h6 className="text-center fw-bold mb-2">Student ID</h6>
+            <h5 className="text-center fw-bold mb-3">Student ID</h5>
 
             <input
               type="text"
               className="form-control text-center mb-4"
               value={studentId}
               onChange={(e) => setStudentId(e.target.value)}
+            />
+
+            <h6 className="text-center fw-bold mb-2">Password</h6>
+
+            <input
+              type="password"
+              className="form-control text-center mb-3"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
             />
 
             <div className="d-flex justify-content-center gap-3">
@@ -277,19 +224,13 @@ const Public = () => {
       {checkAnswerModal && (
         <div
           className="modal fade show d-block"
-          tabIndex="-1"
           style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
         >
           <div className="modal-dialog modal-dialog-centered">
             <div className="modal-content p-4 text-center">
               <h5 className="fw-bold mb-2 text-primary">Message alert!</h5>
               {isLoading ? (
-                <div className="d-flex flex-column align-items-center justify-content-center py-4">
-                  <div
-                    className="spinner-border text-primary mb-3"
-                    role="status"
-                  />
-                </div>
+                <div className="spinner-border text-primary" />
               ) : (
                 <p className="mb-0">{message}</p>
               )}

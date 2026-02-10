@@ -18,7 +18,7 @@ const Dashboard = () => {
         return;
       }
 
-      const response = await fetch("", {
+      const response = await fetch("http://localhost:8000/api/logout", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -29,8 +29,6 @@ const Dashboard = () => {
 
       if (response.ok) {
         localStorage.removeItem("authToken");
-        localStorage.removeItem("username");
-        localStorage.removeItem("userId");
         setTimeout(() => navigate("/"), 1000);
       } else {
         const errorData = await response.json();
