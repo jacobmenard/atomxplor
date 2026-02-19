@@ -82,7 +82,7 @@ class ActivityController extends Controller
                     'user_id' => $user->id,
                     'items' => $request->items,
                     'time_started' => $request->time_started,
-                    'time_ended' => $request->usertime_ended_id,
+                    'time_ended' => $request->time_ended,
                     'activity_action' => $request->activity_action,
                     'title' => $request->title,
                 ]);

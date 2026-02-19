@@ -2,10 +2,11 @@
 
 namespace App\Http\Resources;
 
-use Illuminate\Http\Request;
 use App\Http\Resources\QuestionaireResource;
-use Illuminate\Http\Resources\Json\JsonResource;
 use App\Models\ActivityParticipant;
+use Carbon\Carbon;
+use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\JsonResource;
 
 class ActivityResources extends JsonResource
 {
@@ -28,6 +29,7 @@ class ActivityResources extends JsonResource
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
             'student_participants' => $this->student_participants($this->id),
+            'activity_duration' => $this->activity_duration($this->time_started, $this->time_ended)
         ];
     }
 
@@ -37,5 +39,23 @@ class ActivityResources extends JsonResource
         return $participants;
     }
 
-    
+    public function activity_duration($time_started, $time_ended) {
+        if (!$time_started || !$time_ended) {
+            return 'Unlimited time duration';
+        } else {
+
+            $start = Carbon::parse($time_started);
+
+            $end = Carbon::parse($time_ended);
+
+            $duration = $start->diffInMinutes($end);
+            
+            if ($duration <= 0) {
+                return $duration . ' minute';
+            } else {
+                return $duration . ' minutes';
+            }
+
+        }
+    }
 }
