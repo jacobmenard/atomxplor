@@ -12,7 +12,7 @@ class Activity extends Model
     use HasFactory;
 
     protected $fillable = [
-        'user_id', 'items', 'time_started', 'time_ended', 'activity_action'
+        'user_id', 'items', 'time_started', 'time_ended', 'activity_action', 'title'
     ];
 
     public function user() {

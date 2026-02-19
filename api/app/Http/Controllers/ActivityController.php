@@ -84,6 +84,7 @@ class ActivityController extends Controller
                     'time_started' => $request->time_started,
                     'time_ended' => $request->usertime_ended_id,
                     'activity_action' => $request->activity_action,
+                    'title' => $request->title,
                 ]);
 
                 $questions = $question->inRandomOrder()->limit($request->items)->get();
