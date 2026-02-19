@@ -105,7 +105,7 @@ const Public = () => {
 
       setTimeout(() => {
         navigate("/activity/question", {
-          state: { activityId: item.id }, // ✅ PASS ID HERE
+          state: { activityId: item.id }, 
         });
       }, 4000);
     } catch {

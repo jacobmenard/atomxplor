@@ -46,7 +46,6 @@ const Index = () => {
       }
     };
 
-    // ✅ FIXED FETCH USER (ONLY LOGIC CHANGE)
     const fetchUser = async () => {
       try {
         const response = await fetch("http://127.0.0.1:8000/api/user", {
@@ -60,7 +59,7 @@ const Index = () => {
         if (!response.ok) throw new Error("Failed to fetch user.");
 
         const result = await response.json();
-        setUser(result?.data || null); // ✅ correct extraction
+        setUser(result?.data || null);
         setMessage("");
       } catch (err) {
         setError(err.message);
@@ -132,6 +131,12 @@ const Index = () => {
               <div
                 key={act.id}
                 className="d-flex justify-content-between align-items-center border rounded-4 p-3 mt-3 bg-white shadow-sm flex-wrap text-center"
+                onClick={() => {
+                  navigate("/dashboard/participants", {
+                    state: { activityId: act.id },
+                  });
+                }}
+                style={{ cursor: "pointer" }}
               >
                 <p className="fw-bold mb-0 flex-fill">
                   {act.activity_title || "Untitled"}
@@ -146,7 +151,7 @@ const Index = () => {
                   style={{ color: "#08CB00" }}
                   onClick={() => setShowModalStart(true)}
                 >
-                  Started
+                  {act.activity_action.toUpperCase()}
                 </button>
               </div>
             ))

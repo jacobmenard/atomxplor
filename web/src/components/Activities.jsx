@@ -244,8 +244,16 @@ const Activities = () => {
           <div
             key={act.id}
             className="d-flex justify-content-between align-items-center border rounded-4 p-3 mt-3 bg-white shadow-sm flex-wrap text-center"
+            onClick={() => {
+              navigate("/dashboard/participants", {
+                state: { activityId: act.id },
+              });
+            }}
+            style={{ cursor: "pointer" }}
           >
-            <p className="fw-bold mb-0 flex-fill">{act.activity_title || "Untitled"}</p>
+            <p className="fw-bold mb-0 flex-fill">
+              {act.activity_title || "Untitled"}
+            </p>
             <p className="mb-0 flex-fill">
               {act.score || 0}/{act.total_score || 20}
             </p>
@@ -256,7 +264,7 @@ const Activities = () => {
               style={{ color: "#08CB00" }}
               onClick={() => setShowModalStart(true)}
             >
-              Started
+              {act.activity_action.toUpperCase()}
             </button>
           </div>
         ))

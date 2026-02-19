@@ -8,6 +8,8 @@ import Public from "./pages/Public";
 import Question from "./components/Question";
 import ActivitiesQuestions from "./components/ActivitiesQuestion";
 import Students from "./components/Students";
+import GradeLevel from "./components/GradeLevel";
+import ParticipantList from "./components/ParticipantList";
 
 function App() {
   return (
@@ -20,6 +22,8 @@ function App() {
           <Route path="activities" element={<Activities />} />
           <Route path="questions" element={<Question />} />
           <Route path="students" element={<Students />} />
+          <Route path="grade-level" element={<GradeLevel />} />
+          <Route path="participants" element={<ParticipantList />} />
         </Route>
         <Route path="/public" element={<Public />} />
         <Route path="/activity/question" element={<ActivitiesQuestions />} />

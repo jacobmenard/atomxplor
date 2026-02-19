@@ -13,7 +13,7 @@ const ActivityQuestion = () => {
   const [answers, setAnswers] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // ✅ NEW STATES
+  
   const [result, setResult] = useState(null);
   const [isFinished, setIsFinished] = useState(false);
 
