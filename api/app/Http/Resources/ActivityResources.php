@@ -23,6 +23,7 @@ class ActivityResources extends JsonResource
             'time_started' => $this->time_started,
             'time_ended' => $this->time_ended,
             'activity_action' => $this->activity_action,
+            'title' => $this->title ?? 'Untitled Activity',
             'questionaires' => QuestionaireResource::collection($this->questionaires),
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
