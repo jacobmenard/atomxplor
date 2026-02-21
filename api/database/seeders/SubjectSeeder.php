@@ -20,5 +20,9 @@ class SubjectSeeder extends Seeder
             'subject' => 'SCIENCE'
         ]);
         
+        $subjects->create([
+            'subject' => 'CHEMISTRY',
+        ]);
+        
     }
 }

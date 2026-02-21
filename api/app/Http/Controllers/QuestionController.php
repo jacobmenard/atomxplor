@@ -91,16 +91,34 @@ class QuestionController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Question $question)
+    public function update($question, Request $request, Question $questions)
     {
         //
+        try {   
+            $questions->where('id', $question)->update([
+                'subject_id' => $request->subject_id,
+                'question' => $request->question,
+                'answer' => $request->answer,
+                'question_type' => $request->question_type,
+            ]);
+
+            return success(null, 'Question successfully updated');
+        } catch (\Exception $e) {
+            return error(null, $e->getMessage());
+        }
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Question $question)
+    public function destroy($question, Request $request, Question $questions)
     {
         //
+        try {
+            $questions->where('id', $question)->delete();
+            return success(null, 'Question successfully deleted');
+        } catch (\Exception $e) {
+            return error(null, $e->getMessage());
+        }
     }
 }
