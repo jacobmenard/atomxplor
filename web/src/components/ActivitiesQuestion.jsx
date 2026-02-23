@@ -13,7 +13,6 @@ const ActivityQuestion = () => {
   const [answers, setAnswers] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  
   const [result, setResult] = useState(null);
   const [isFinished, setIsFinished] = useState(false);
 
@@ -57,9 +56,11 @@ const ActivityQuestion = () => {
       answers: activity.questionaires.map((q) => ({
         question_id: q.question.id,
         correct_answer: q.question.answer,
-        user_answer: answers[q.question.id] || null,
+        user_answer: answers[q.question.id],
       })),
     };
+
+    console.log("Payload answers:", payload.answers);
 
     try {
       const response = await fetch(
@@ -99,10 +100,11 @@ const ActivityQuestion = () => {
 
         <div className="text-end">
           <p className="mb-1 fw-semibold">
-            Duration: {activity?.duration || "10–20 minutes"}
+            Duration: {activity?.activity_duration || "10–20 minutes"}
           </p>
           <p className="mb-0 fw-semibold">
-            Status: <span className="text-success">Started</span>
+            Status:{" "}
+            <span className="text-success">{activity?.activity_action}</span>
           </p>
         </div>
       </div>

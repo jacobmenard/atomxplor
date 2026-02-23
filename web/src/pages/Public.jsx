@@ -68,6 +68,7 @@ const Public = () => {
       if (!response.ok) throw new Error(data.message);
 
       localStorage.setItem("studentToken", data.token);
+      localStorage.setItem("studentId", data.id);
       setStudentLoginModal(false);
 
       navigatorToQuestion(selectedActivity);
@@ -105,7 +106,7 @@ const Public = () => {
 
       setTimeout(() => {
         navigate("/activity/question", {
-          state: { activityId: item.id }, 
+          state: { activityId: item.id },
         });
       }, 4000);
     } catch {

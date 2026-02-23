@@ -10,10 +10,12 @@ const Dashboard = () => {
   const handleLogout = async () => {
     try {
       setIsLoggingOut(true);
+      setError("");
+
       const authToken = localStorage.getItem("authToken");
 
       if (!authToken) {
-        setError("No authentication token found.");
+        setIsLoggingOut(false);
         navigate("/");
         return;
       }
@@ -21,23 +23,23 @@ const Dashboard = () => {
       const response = await fetch("http://localhost:8000/api/logout", {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
           Accept: "application/json",
           Authorization: `Bearer ${authToken}`,
         },
       });
 
+      const data = await response.json().catch(() => null);
+
       if (response.ok) {
         localStorage.removeItem("authToken");
-        setTimeout(() => navigate("/"), 1000);
+        navigate("/");
       } else {
-        const errorData = await response.json();
-        setError(errorData.message || "Logout failed.");
+        setError(data?.message || "Logout failed.");
         setIsLoggingOut(false);
       }
     } catch (err) {
       console.error("Logout error:", err);
-      setError("Failed to connect to the server for logout.");
+      setError("Failed to connect to the server.");
       setIsLoggingOut(false);
     }
   };

@@ -4,10 +4,10 @@ import { useNavigate } from "react-router-dom";
 const Activities = () => {
   const [showModalStart, setShowModalStart] = useState(false);
   const [activityModal, setActivityModal] = useState(false);
-  const [activity, setActivity] = useState(null);
+  const [activity, setActivity] = useState([]);
   const [subjects, setSubjects] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [message, setMessage] = useState("");
+
   const [error, setError] = useState("");
 
   const [title, setTitle] = useState("");
@@ -94,7 +94,7 @@ const Activities = () => {
         },
         body: JSON.stringify({
           user_id: Number(userID),
-          activity_title: title,
+          title: title,
           items: Number(items),
           time_started: startTime,
           time_ended: endTime,
@@ -106,13 +106,23 @@ const Activities = () => {
       if (!response.ok)
         throw new Error(data.message || "Failed to create activity");
 
-      setMessage("Activity created successfully");
       setActivityModal(false);
       setTitle("");
       setItems("");
       setStartTime("");
       setEndTime("");
       setError("");
+
+      const authTokenRefresh = localStorage.getItem("authToken");
+      const refreshResponse = await fetch(
+        "http://127.0.0.1:8000/api/v1/activity",
+        {
+          method: "GET",
+          headers: { Authorization: `Bearer ${authTokenRefresh}` },
+        }
+      );
+      const refreshData = await refreshResponse.json();
+      if (refreshResponse.ok) setActivity(refreshData.data);
     } catch (err) {
       setError(err.message);
     }
@@ -120,14 +130,9 @@ const Activities = () => {
 
   return (
     <div className="container mt-4">
-      {message && (
-        <div>
-          <p>{message}</p>
-        </div>
-      )}
       {error && (
-        <div>
-          <p>{error}</p>
+        <div className="alert alert-danger">
+          <p className="mb-0">{error}</p>
         </div>
       )}
       <div className="d-flex justify-content-between align-items-center p-3">
@@ -223,6 +228,7 @@ const Activities = () => {
                     SAVE
                   </button>
                   <button
+                    type="button"
                     className="btn btn-danger px-4"
                     onClick={() => setActivityModal(false)}
                   >
@@ -239,6 +245,10 @@ const Activities = () => {
         <div className="text-center py-5">
           <div className="spinner-border text-primary" role="status" />
         </div>
+      ) : activity.length === 0 ? (
+        <div className="text-center py-5 text-muted">
+          <p>No activities found. Create one to get started!</p>
+        </div>
       ) : (
         activity.map((act) => (
           <div
@@ -251,18 +261,22 @@ const Activities = () => {
             }}
             style={{ cursor: "pointer" }}
           >
-            <p className="fw-bold mb-0 flex-fill">
-              {act.activity_title || "Untitled"}
-            </p>
+            <p className="fw-bold mb-0 flex-fill">{act.title}</p>
             <p className="mb-0 flex-fill">
-              {act.score || 0}/{act.total_score || 20}
+              {act.score || 0}/{act.items}
             </p>
             <p className="mb-0 flex-fill">{act.time_started}</p>
             <p className="mb-0 flex-fill">{act.time_ended}</p>
             <button
               className="bg-white border-0 fw-bold"
-              style={{ color: "#08CB00" }}
-              onClick={() => setShowModalStart(true)}
+              style={{
+                color:
+                  act.activity_action === "not_start" ? "#FF0000" : "#08CB00",
+              }}
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowModalStart(true);
+              }}
             >
               {act.activity_action.toUpperCase()}
             </button>

@@ -139,16 +139,21 @@ const Index = () => {
                 style={{ cursor: "pointer" }}
               >
                 <p className="fw-bold mb-0 flex-fill">
-                  {act.activity_title || "Untitled"}
+                  {act.title || "Untitled"}
                 </p>
                 <p className="mb-0 flex-fill">
-                  {act.score || 0}/{act.total_score || 20}
+                  {act.score || 0}/{act.items || 20}
                 </p>
                 <p className="mb-0 flex-fill">{act.time_started}</p>
                 <p className="mb-0 flex-fill">{act.time_ended}</p>
                 <button
                   className="bg-white border-0 fw-bold"
-                  style={{ color: "#08CB00" }}
+                  style={{
+                    color:
+                      act.activity_action === "not_start"
+                        ? "#FF0000"
+                        : "#08CB00",
+                  }}
                   onClick={() => setShowModalStart(true)}
                 >
                   {act.activity_action.toUpperCase()}
