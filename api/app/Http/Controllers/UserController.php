@@ -61,4 +61,40 @@ class UserController extends Controller
 
         return success(new UserResource($newUser), 'New student successfully created.');
     }
+
+    public function updateUser($id, Request $request, User $user, UserProfile $userProfile) {
+        try {
+            $request->validate([
+                'first_name' => 'required',
+                'last_name' => 'required',
+                'gender' => 'required',
+                'grade_level_id' => 'required',
+                'student_id_number' => 'required|unique:users,student_id_number,'.$id,
+            ]);
+            if ($user->where('student_id_number', $request->student_id_number)->where('id', '!=', $id)->first()) {
+                return error(null, 'Student ID number already exists.');
+            }
+
+            $fullName = $request->first_name . ' ' . $request->last_name;
+            $trimName = str_replace(' ', '', $fullName);
+            $email = $request->student_id_number. strtolower($trimName) . '@student.com';
+            
+            $user->where('id', $id)->update([
+                'name' => $fullName,
+                'email' => $email,
+                'student_id_number' => $request->student_id_number,
+            ]);
+
+            $userProfile->where('user_id', $id)->update([
+                'first_name' => $request->first_name,
+                'last_name' => $request->last_name,
+                'gender' => $request->gender,
+                'grade_level_id' => $request->grade_level_id,
+            ]);
+
+            return success(null, 'User successfully updated');
+        } catch (\Exception $e) {
+            return error(null, $e->getMessage());
+        }
+    }
 }

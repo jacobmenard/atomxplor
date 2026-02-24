@@ -13,7 +13,7 @@ class SubjectsController extends Controller
     public function index(Subject $subject)
     {
         //
-        return success($subject->all(), '');
+        return success($subject->orderBy('subject', 'asc')->get(), '');
     }
 
     /**
@@ -40,7 +40,7 @@ class SubjectsController extends Controller
                 'subject' => $request->subject
             ]);
 
-            return success($subject, 'Subject successfully created');
+            return success(null, 'Subject successfully created');
         } catch (\Exception $e) {
             return error(null, $e->getMessage());
         }
@@ -65,16 +65,35 @@ class SubjectsController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Subject $subject)
+    public function update($subject, Request $request, Subject $subjects)
     {
         //
+        try {
+            if ($subjects->where('subject', $request->subject)->where('id', '!=', $request->id)->first()) {
+                return error(null, 'Subject already exists.');
+            }
+            $subjects->where('id', $subject)->update([
+                'subject' => $request->subject
+            ]);
+
+            return success(null, 'Subject successfully updated');
+        } catch (\Exception $e) {
+            return error(null, $e->getMessage());
+        }
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Subject $subject)
+    public function destroy($subject, Request $request, Subject $subjects)
     {
         //
+        try {
+            $subjects->where('id', $subject)->delete();
+            return success(null, 'Subject successfully deleted');
+        } catch (\Exception $e) {
+            return error(null, $e->getMessage());
+        }
+
     }
 }

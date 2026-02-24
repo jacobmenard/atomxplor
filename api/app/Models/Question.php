@@ -6,10 +6,11 @@ use App\Models\Subject;
 use App\Models\QuestionItem;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Question extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes;
 
     protected $fillable = [
         'subject_id', 'question', 'answer', 'question_type'

@@ -6,7 +6,6 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\AnswerController;
-use App\Http\Controllers\StudentController;
 use App\Http\Controllers\ActivityController;
 use App\Http\Controllers\QuestionController;
 use App\Http\Controllers\SubjectsController;
@@ -34,35 +33,35 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 
 Route::prefix('v1')->group(function () {
     Route::middleware('auth:sanctum')->group(function() {
-    Route::resource('/activity', ActivityController::class);
-    Route::prefix('/activities')->group(function () {
-        Route::get('/student-participants-list', [ActivityController::class, 'studentParticipantsList']);
-        Route::put('/student-participants-action', [ActivityController::class, 'studentParticipantsAction']);
-    });
-    Route::resource('/question', QuestionController::class);
-    Route::resource('/subject', SubjectsController::class);
+        Route::resource('/activity', ActivityController::class);
+        Route::prefix('/activities')->group(function () {
+            Route::get('/student-participants-list', [ActivityController::class, 'studentParticipantsList']);
+            Route::put('/student-participants-action', [ActivityController::class, 'studentParticipantsAction']);
+        });
+        Route::resource('/question', QuestionController::class);
+        Route::resource('/subject', SubjectsController::class);
 
-    Route::get('/dashboard', [ActivityController::class, 'dashboard']);
+        Route::get('/dashboard', [ActivityController::class, 'dashboard']);
 
-    Route::prefix('activity')->group(function() {
-        Route::post('/{id}/submit-answer', [AnswerController::class, 'answer']);
-        Route::get('/{id}/check-already-answered', [ActivityParticipantController::class, 'checkAlreadyAnswered']);
-        Route::get('/get-object/{id}', [ActivityController::class, 'getObject']);
+        Route::prefix('activity')->group(function() {
+            Route::post('/{id}/submit-answer', [AnswerController::class, 'answer']);
+            Route::get('/{id}/check-already-answered', [ActivityParticipantController::class, 'checkAlreadyAnswered']);
+            Route::get('/get-object/{id}', [ActivityController::class, 'getObject']);
+        });
+        
+        Route::resource('/grade-level', GradeLevelController::class);
+        Route::prefix('/students')->group(function() {
+            Route::get('/list', [UserController::class, 'studentList']);
+            Route::post('/new-student', [UserController::class, 'newStudent']);
+        });
+        Route::put('/students/update-student/{id}', [UserController::class, 'updateUser']);
     });
-    
-    Route::resource('/grade-level', GradeLevelController::class);
-    Route::prefix('/students')->group(function() {
-        Route::get('/list', [UserController::class, 'studentList']);
-        Route::post('/new-student', [UserController::class, 'newStudent']);
-    });
-});
 
     // public apis
     Route::prefix('/public')->group(function() {
         Route::prefix('activity')->group(function() {
             Route::get('/list', [ActivityController::class, 'publicActivityList']);
             Route::get('/{id}', [ActivityController::class, 'show']);
-
         });
     });
 });

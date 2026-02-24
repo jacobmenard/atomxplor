@@ -63,16 +63,34 @@ class GradeLevelController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, GradeLevel $gradeLevel)
+    public function update($gradeLevel, Request $request, GradeLevel $gradeLevels)
     {
         //
+        try {
+            if ($gradeLevels->where('grade_level', $request->grade_level)->where('id', '!=', $gradeLevel)->first()) {
+                return error(null, 'Grade level already exists.');
+            }
+            $gradeLevels->where('id', $gradeLevel)->update([
+                'grade_level' => $request->grade_level
+            ]);
+
+            return success(null, 'Grade level successfully updated');
+        } catch (\Exception $e) {
+            return error(null, $e->getMessage());
+        }
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(GradeLevel $gradeLevel)
+    public function destroy($gradeLevel, Request $request, GradeLevel $gradeLevels)
     {
         //
+        try {
+            $gradeLevels->where('id', $gradeLevel)->delete();
+            return success(null, 'Grade level successfully deleted');
+        } catch (\Exception $e) {
+            return error(null, $e->getMessage());
+        }
     }
 }

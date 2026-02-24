@@ -146,6 +146,12 @@ class ActivityController extends Controller
     public function destroy(Activity $activity)
     {
         //
+        try {
+            $activity->delete();
+            return success(null, 'Activity successfully deleted');
+        } catch (\Exception $e) {
+            return error(null, $e->getMessage());
+        }
     }
 
     public function getObject($id, Activity $activity) {
@@ -187,4 +193,5 @@ class ActivityController extends Controller
             return error(null, $e->getMessage());
         }
     }
+
 }
