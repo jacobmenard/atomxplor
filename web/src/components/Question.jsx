@@ -6,6 +6,8 @@ const Question = () => {
   const { subjectId } = useParams();
 
   const [showModal, setShowModal] = useState(false);
+  const [showUpdateModal, setShowUpdateModal] = useState(false);
+  const [updatingId, setUpdatingId] = useState(null);
   const [message, setMessage] = useState("");
   const [messageType, setMessageType] = useState("info");
   const [isSaving, setIsSaving] = useState(false);
@@ -19,7 +21,20 @@ const Question = () => {
   const [subjects, setSubjects] = useState([]);
   const [selectedSubjectId, setSelectedSubjectId] = useState(subjectId || "");
 
+  const [updatedSubjectId, setUpdateSubjectId] = useState("");
+  const [updatedQuestion, setUpdatedQuestion] = useState("");
+  const [updatedAnswer, setUpdatedAnswer] = useState("");
+  const [updatedQuestionType, setUpdatedQuestionType] =
+    useState("multiple_choice");
+
   const [choices, setChoices] = useState([
+    { question_choice: "a", question_text: "" },
+    { question_choice: "b", question_text: "" },
+    { question_choice: "c", question_text: "" },
+    { question_choice: "d", question_text: "" },
+  ]);
+
+  const [updatedChoices, setUpdatedChoices] = useState([
     { question_choice: "a", question_text: "" },
     { question_choice: "b", question_text: "" },
     { question_choice: "c", question_text: "" },
@@ -108,6 +123,12 @@ const Question = () => {
     const updated = [...choices];
     updated[index].question_text = value;
     setChoices(updated);
+  };
+
+  const handleUpdatedChoiceChange = (index, value) => {
+    const updated = [...updatedChoices];
+    updated[index].question_text = value;
+    setUpdatedChoices(updated);
   };
 
   const handleSaveQuestion = async () => {
@@ -217,6 +238,106 @@ const Question = () => {
     }
   };
 
+  const handleUpdateQuestion = (id) => {
+    const target = questions.find((q) => q.id === id);
+    if (!target) return;
+
+    setUpdatingId(id);
+    setUpdatedQuestion(target.question ?? "");
+    setUpdatedAnswer(target.answer ?? "");
+    setUpdatedQuestionType(target.question_type ?? "multiple_choice");
+    setUpdateSubjectId(String(target.subject_id ?? target.subject?.id ?? ""));
+
+    if (target.question_items?.length) {
+      setUpdatedChoices(
+        target.question_items.map((item) => ({
+          question_choice: item.question_choice,
+          question_text: item.question_text ?? "",
+        }))
+      );
+    } else {
+      setUpdatedChoices([
+        { question_choice: "a", question_text: "" },
+        { question_choice: "b", question_text: "" },
+        { question_choice: "c", question_text: "" },
+        { question_choice: "d", question_text: "" },
+      ]);
+    }
+
+    setShowUpdateModal(true);
+  };
+
+  const handleSaveUpdate = async () => {
+    if (isSaving) return;
+
+    const authToken = localStorage.getItem("authToken");
+    if (!authToken) {
+      navigate("/");
+      return;
+    }
+
+    if (!updatedQuestion || !updatedSubjectId) {
+      setMessage("Question and subject are required.");
+      setMessageType("error");
+      return;
+    }
+
+    if (updatedQuestionType === "multiple_choice") {
+      if (!updatedAnswer) {
+        setMessage("Answer is required for multiple choice.");
+        setMessageType("error");
+        return;
+      }
+      if (!["a", "b", "c", "d"].includes(updatedAnswer.trim().toLowerCase())) {
+        setMessage("Answer must be a, b, c, or d.");
+        setMessageType("error");
+        return;
+      }
+      if (updatedChoices.some((c) => !c.question_text.trim())) {
+        setMessage("All choices must be filled.");
+        setMessageType("error");
+        return;
+      }
+    }
+
+    setIsSaving(true);
+    setMessage("");
+
+    try {
+      const response = await fetch(
+        `http://127.0.0.1:8000/api/v1/question/${updatingId}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${authToken}`,
+          },
+          body: JSON.stringify({
+            subject_id: Number(updatedSubjectId),
+            question: updatedQuestion,
+            answer:
+              updatedQuestionType === "multiple_choice" ? updatedAnswer : null,
+            question_type: updatedQuestionType,
+          }),
+        }
+      );
+
+      const data = await response.json();
+      if (!response.ok)
+        throw new Error(data.message || "Failed to update question");
+
+      setMessage(data.message || "Question updated successfully");
+      setMessageType("success");
+      setShowUpdateModal(false);
+      fetchQuestions();
+    } catch (error) {
+      setMessage(error.message);
+      setMessageType("error");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   const getAlertClass = () => {
     if (messageType === "success") return "alert-success";
     if (messageType === "error") return "alert-danger";
@@ -253,7 +374,7 @@ const Question = () => {
               <tr>
                 <th className="bg-primary text-white text-start">ID</th>
                 <th className="bg-primary text-white">Question</th>
-                <th className="bg-primary text-white"> Question Type</th>
+                <th className="bg-primary text-white">Question Type</th>
                 <th className="bg-primary text-white">Subject</th>
                 <th className="bg-primary text-white">Action</th>
               </tr>
@@ -264,15 +385,18 @@ const Question = () => {
                   <td colSpan="5">No questions found</td>
                 </tr>
               ) : (
-                questions.map((q) => (
+                questions.map((q, index) => (
                   <tr key={q.id}>
-                    <td className="text-start">{q.subject?.id}</td>
+                    <td className="text-start">{index + 1}</td>
                     <td>{q.question}</td>
-                    <td>{q.subject?.question_type}</td>
+                    <td>{q.question_type}</td>
                     <td>{q.subject?.subject}</td>
                     <td>
                       <div className="d-flex justify-content-center gap-2">
-                        <button className="btn btn-primary btn-sm">
+                        <button
+                          className="btn btn-primary btn-sm"
+                          onClick={() => handleUpdateQuestion(q.id)}
+                        >
                           Update
                         </button>
                         <button
@@ -411,6 +535,132 @@ const Question = () => {
                     setShowModal(false);
                     resetModal();
                   }}
+                >
+                  CANCEL
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showUpdateModal && (
+        <div
+          className="modal fade show d-block"
+          style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
+          onClick={() => setShowUpdateModal(false)}
+        >
+          <div
+            className="modal-dialog modal-dialog-centered"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="modal-content p-4 rounded-4 border-0">
+              <h4 className="text-center fw-bold mb-4">Update question</h4>
+
+              <div className="mb-3">
+                <label className="form-label fw-semibold">Question:</label>
+                <input
+                  className="form-control"
+                  value={updatedQuestion}
+                  onChange={(e) => setUpdatedQuestion(e.target.value)}
+                />
+              </div>
+
+              <div className="mb-3">
+                <label className="form-label fw-semibold">Subject:</label>
+                <select
+                  className="form-select"
+                  value={updatedSubjectId}
+                  onChange={(e) => setUpdateSubjectId(e.target.value)}
+                >
+                  <option value="">Select Subject</option>
+                  {subjects.map((s) => (
+                    <option key={s.id} value={s.id}>
+                      {s.subject}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="mb-3">
+                <label className="form-label fw-semibold">
+                  Choose question type:
+                </label>
+                <div className="d-flex gap-2">
+                  {[
+                    { value: "multiple_choice", label: "Multiple Choice" },
+                    { value: "drag_and_drop", label: "Drag and drop" },
+                    { value: "matching", label: "Matching" },
+                  ].map((type) => (
+                    <button
+                      key={type.value}
+                      type="button"
+                      className={`btn flex-fill ${
+                        updatedQuestionType === type.value
+                          ? "btn-primary text-white"
+                          : "btn-outline-primary"
+                      }`}
+                      onClick={() => setUpdatedQuestionType(type.value)}
+                    >
+                      {type.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {updatedQuestionType === "multiple_choice" && (
+                <>
+                  <div className="mb-3">
+                    <label className="form-label fw-semibold">
+                      Correct Answer
+                    </label>
+                    <input
+                      className="form-control"
+                      style={{ maxWidth: "120px" }}
+                      value={updatedAnswer}
+                      onChange={(e) => setUpdatedAnswer(e.target.value)}
+                      placeholder="a"
+                    />
+                  </div>
+
+                  <div className="mb-4">
+                    <label className="form-label fw-semibold">Choices</label>
+                    {updatedChoices.map((choice, index) => (
+                      <div
+                        key={choice.question_choice}
+                        className="d-flex align-items-center gap-2 mb-2"
+                      >
+                        <input
+                          className="form-control text-center"
+                          style={{ width: "50px" }}
+                          value={choice.question_choice}
+                          disabled
+                        />
+                        <input
+                          className="form-control"
+                          value={choice.question_text}
+                          onChange={(e) =>
+                            handleUpdatedChoiceChange(index, e.target.value)
+                          }
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </>
+              )}
+
+              <div className="d-flex justify-content-center gap-3 mt-4">
+                <button
+                  className="btn btn-primary px-5 py-2 fw-bold"
+                  onClick={handleSaveUpdate}
+                  disabled={isSaving}
+                >
+                  {isSaving ? "SAVING..." : "SAVE"}
+                </button>
+
+                <button
+                  className="btn btn-danger px-5 py-2 fw-bold"
+                  onClick={() => setShowUpdateModal(false)}
                 >
                   CANCEL
                 </button>

@@ -7,6 +7,10 @@ const GradeLevel = () => {
   const [gradeModal, setGradeModal] = useState(false);
   const [gradeLevel, setGradeLevel] = useState("");
 
+  const [updatedGradeLevel, setUpdatedGradeLevel] = useState("");
+  const [updateModal, setUpdateModal] = useState(false);
+  const [selectedId, setSelectedId] = useState(null);
+
   const navigate = useNavigate();
 
   const authToken = localStorage.getItem("authToken");
@@ -70,6 +74,65 @@ const GradeLevel = () => {
     }
   };
 
+  const updateGradeLevel = async (e) => {
+    e.preventDefault();
+
+    try {
+      const response = await fetch(
+        `http://127.0.0.1:8000/api/v1/grade-level/${selectedId}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${authToken}`,
+          },
+          body: JSON.stringify({
+            grade_level: updatedGradeLevel,
+          }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Failed to update grade level");
+      }
+
+      setUpdateModal(false);
+      setSelectedId(null);
+      fetchGrade();
+    } catch (error) {
+      throw new Error(error.message);
+    }
+  };
+
+  const deleteGradeLevel = async (id) => {
+    try {
+      const response = await fetch(
+        `http://127.0.0.1:8000/api/v1/grade-level/${id}`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${authToken}`,
+          },
+        }
+      );
+
+      let data = {};
+      if (response.status !== 204) {
+        data = await response.json();
+      }
+
+      if (!response.ok) {
+        throw new Error(data.message || "Failed to Delete");
+      }
+
+      setGrades((prev) => prev.filter((grade) => grade.id !== id));
+    } catch (err) {
+      throw new Error(err.message);
+    }
+  };
+
   return (
     <div className="container mt-4">
       <div className="d-flex justify-content-between align-items-center mb-3">
@@ -119,6 +182,46 @@ const GradeLevel = () => {
         </div>
       )}
 
+      {updateModal && (
+        <div
+          className="modal fade show d-block"
+          style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
+        >
+          <div className="modal-dialog modal-dialog-centered">
+            <div className="modal-content p-4 rounded-4">
+              <h5 className="fw-bold text-center mb-4">Update Grade Level</h5>
+
+              <form onSubmit={updateGradeLevel}>
+                <div className="mb-3">
+                  <label className="form-label fw-semibold">Grade Level</label>
+                  <input
+                    type="text"
+                    className="form-control"
+                    placeholder="Grade 1"
+                    value={updatedGradeLevel}
+                    onChange={(e) => setUpdatedGradeLevel(e.target.value)}
+                    required
+                  />
+                </div>
+
+                <div className="d-flex justify-content-center gap-3">
+                  <button type="submit" className="btn btn-primary px-4">
+                    SAVE
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn-danger px-4"
+                    onClick={() => setUpdateModal(false)}
+                  >
+                    CANCEL
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
+
       {isLoading ? (
         <div className="text-center py-5">
           <div className="spinner-border text-primary" />
@@ -138,10 +241,22 @@ const GradeLevel = () => {
                 <td>{grade.id}</td>
                 <td>{grade.grade_level}</td>
                 <td className="text-end px-2">
-                  <button className="btn btn-primary btn-sm me-2">
+                  <button
+                    className="btn btn-primary btn-sm me-2"
+                    onClick={() => {
+                      setSelectedId(grade.id);
+                      setUpdatedGradeLevel(grade.grade_level);
+                      setUpdateModal(true);
+                    }}
+                  >
                     Update
                   </button>
-                  <button className="btn btn-danger btn-sm">Delete</button>
+                  <button
+                    className="btn btn-danger btn-sm"
+                    onClick={() => deleteGradeLevel(grade.id)}
+                  >
+                    Delete
+                  </button>
                 </td>
               </tr>
             ))}

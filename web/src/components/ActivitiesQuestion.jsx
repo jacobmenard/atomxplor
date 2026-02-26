@@ -12,7 +12,6 @@ const ActivityQuestion = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [answers, setAnswers] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
-
   const [result, setResult] = useState(null);
   const [isFinished, setIsFinished] = useState(false);
 
@@ -55,12 +54,10 @@ const ActivityQuestion = () => {
     const payload = {
       answers: activity.questionaires.map((q) => ({
         question_id: q.question.id,
-        correct_answer: q.question.answer,
-        user_answer: answers[q.question.id],
+        correct_answer: q.question.answer?.toString().trim().toLowerCase(),
+        user_answer: answers[q.question.id]?.toString().trim().toLowerCase(),
       })),
     };
-
-    console.log("Payload answers:", payload.answers);
 
     try {
       const response = await fetch(

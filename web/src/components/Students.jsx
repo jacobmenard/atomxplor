@@ -6,71 +6,27 @@ const Students = () => {
   const [message, setMessage] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [studentModal, setStudentModal] = useState(false);
-  const [grades, setGrades] = useState("");
+  const [updateModal, setUpdateModal] = useState(false);
+  const [grades, setGrades] = useState([]);
 
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
-  const [gender, setGender] = useState();
+  const [gender, setGender] = useState("Male");
   const [gradeId, setGradeId] = useState("");
   const [studentIdNumber, setStudentIdNumber] = useState("");
 
+  const [selectedStudentId, setSelectedStudentId] = useState(null);
+  const [updatedFirstName, setUpdatedFirstName] = useState("");
+  const [updatedLastName, setUpdatedLastName] = useState("");
+  const [updatedGender, setUpdatedGender] = useState("");
+  const [updatedGradeId, setUpdatedGradeId] = useState("");
+  const [updatedStudentIdNumber, setUpdatedStudentIdNumber] = useState("");
+
   const navigate = useNavigate();
-
-  const createStudents = async () => {
-    const authToken = localStorage.getItem("authToken");
-
-    if (!authToken) {
-      navigate("/");
-      return;
-    }
-
-    try {
-      const response = await fetch(
-        "http://127.0.0.1:8000/api/v1/students/new-student",
-        {
-          method: "POST",
-          headers: {
-            "Content-type": "application/json",
-            Authorization: `Bearer ${authToken}`,
-          },
-          body: JSON.stringify({
-            first_name: firstName,
-            last_name: lastName,
-            gender: gender,
-            grade_level_id: Number(gradeId),
-            student_id_number: Number(studentIdNumber),
-          }),
-        }
-      );
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || "Failed to create question");
-      }
-
-      await fetchStudents();
-
-      setStudentModal(false);
-      setFirstName("");
-      setLastName("");
-      setGender("");
-      setGradeId("");
-      setStudentIdNumber("");
-      setMessage("");
-      console.log(data.message || "Successfully Created");
-    } catch (err) {
-      setMessage(err.message || "Failed To Save data");
-    }
-  };
 
   const fetchStudents = async () => {
     const authToken = localStorage.getItem("authToken");
-
-    if (!authToken) {
-      navigate("/");
-      return;
-    }
+    if (!authToken) return navigate("/");
 
     try {
       const response = await fetch(
@@ -87,15 +43,13 @@ const Students = () => {
       const data = await response.json();
 
       if (!response.ok) {
-        setMessage("Failed to fetch students");
         setStudents([]);
         return;
       }
 
       setStudents(data.data || []);
-    } catch (error) {
-      setMessage("Failed to load students");
-      console.error(error);
+    } catch {
+      setStudents([]);
     } finally {
       setIsLoading(false);
     }
@@ -103,36 +57,111 @@ const Students = () => {
 
   const fetchStudentGrade = async () => {
     const authToken = localStorage.getItem("authToken");
+    if (!authToken) return navigate("/");
 
-    if (!authToken) {
-      navigate("/");
-      return;
-    }
     try {
       const response = await fetch("http://127.0.0.1:8000/api/v1/grade-level", {
         method: "GET",
         headers: {
-          "Content-Type": "application/json",
           Authorization: `Bearer ${authToken}`,
         },
       });
 
       const data = await response.json();
+      if (!response.ok) throw new Error();
 
-      if (!response.ok || data.status !== "success") {
-        throw new Error(data.message || "Failed to fetch grade levels");
-      }
-
-      setGrades(Array.isArray(data.data) ? data.data : []);
-    } catch (err) {
-      console.error(err);
+      setGrades(data.data || []);
+    } catch {
       setGrades([]);
-      setMessage(err.message || "Failed to load grade levels");
     }
   };
+
+  const createStudents = async () => {
+    const authToken = localStorage.getItem("authToken");
+    if (!authToken) return navigate("/");
+
+    try {
+      const response = await fetch(
+        "http://127.0.0.1:8000/api/v1/students/new-student",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${authToken}`,
+          },
+          body: JSON.stringify({
+            first_name: firstName,
+            last_name: lastName,
+            gender: gender,
+            grade_level_id: Number(gradeId),
+            student_id_number: Number(studentIdNumber),
+          }),
+        }
+      );
+
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.message);
+
+      await fetchStudents();
+
+      setStudentModal(false);
+      setFirstName("");
+      setLastName("");
+      setGender("Male");
+      setGradeId("");
+      setStudentIdNumber("");
+      setMessage("");
+    } catch (err) {
+      setMessage(err.message || "Failed to create student");
+    }
+  };
+
+  const openUpdateModal = (student) => {
+    setSelectedStudentId(student.id);
+    setUpdatedStudentIdNumber(student.student_id_number || "");
+    setUpdatedFirstName(student.user_profile?.first_name || "");
+    setUpdatedLastName(student.user_profile?.last_name || "");
+    setUpdatedGender(student.user_profile?.gender || "");
+    setUpdatedGradeId(student.user_profile?.grade_level_id || "");
+    setUpdateModal(true);
+  };
+
+  const handleUpdateStudent = async () => {
+    const authToken = localStorage.getItem("authToken");
+    if (!authToken) return navigate("/");
+
+    try {
+      const response = await fetch(
+        `http://127.0.0.1:8000/api/v1/students/update-student/${selectedStudentId}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${authToken}`,
+          },
+          body: JSON.stringify({
+            first_name: updatedFirstName,
+            last_name: updatedLastName,
+            gender: updatedGender,
+            grade_level_id: Number(updatedGradeId),
+            student_id_number: Number(updatedStudentIdNumber),
+          }),
+        }
+      );
+
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.message);
+
+      await fetchStudents();
+      setUpdateModal(false);
+      setMessage("");
+    } catch (err) {
+      setMessage(err.message || "Update failed");
+    }
+  };
+
   useEffect(() => {
     fetchStudentGrade();
-
     fetchStudents();
   }, []);
 
@@ -178,7 +207,10 @@ const Students = () => {
                     <td>{student.user_profile?.grade_level?.grade_level}</td>
                     <td>
                       <div className="d-flex justify-content-center gap-2">
-                        <button className="btn btn-primary btn-sm">
+                        <button
+                          className="btn btn-primary btn-sm"
+                          onClick={() => openUpdateModal(student)}
+                        >
                           Update
                         </button>
                         <button className="btn btn-danger btn-sm">
@@ -202,6 +234,7 @@ const Students = () => {
           <div className="modal-dialog modal-dialog-centered">
             <div className="modal-content p-4 rounded-4 border-0">
               <h4 className="text-center fw-bold mb-4">New Student</h4>
+
               <div className="mb-3">
                 <label className="form-label fw-semibold">
                   Student ID Number:
@@ -213,6 +246,7 @@ const Students = () => {
                   onChange={(e) => setStudentIdNumber(e.target.value)}
                 />
               </div>
+
               <div className="mb-3">
                 <label className="form-label fw-semibold">First Name:</label>
                 <input
@@ -242,9 +276,7 @@ const Students = () => {
                       value={gender}
                       onChange={(e) => setGender(e.target.value)}
                     >
-                      <option className="form-option" value="Male">
-                        Male
-                      </option>
+                      <option value="Male">Male</option>
                       <option value="Female">Female</option>
                     </select>
                   </div>
@@ -281,6 +313,102 @@ const Students = () => {
                 <button
                   className="btn btn-danger px-5 py-2 fw-bold"
                   onClick={() => setStudentModal(false)}
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {updateModal && (
+        <div
+          className="modal fade show d-block"
+          style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
+        >
+          <div className="modal-dialog modal-dialog-centered">
+            <div className="modal-content p-4 rounded-4 border-0">
+              <h4 className="text-center fw-bold mb-4">Update Student</h4>
+
+              <div className="mb-3">
+                <label className="form-label fw-semibold">
+                  Student ID Number:
+                </label>
+                <input
+                  type="number"
+                  className="form-control"
+                  value={updatedStudentIdNumber}
+                  onChange={(e) => setUpdatedStudentIdNumber(e.target.value)}
+                />
+              </div>
+
+              <div className="mb-3">
+                <label className="form-label fw-semibold">First Name:</label>
+                <input
+                  type="text"
+                  className="form-control"
+                  value={updatedFirstName}
+                  onChange={(e) => setUpdatedFirstName(e.target.value)}
+                />
+              </div>
+
+              <div className="mb-3">
+                <label className="form-label fw-semibold">Last Name:</label>
+                <input
+                  type="text"
+                  className="form-control"
+                  value={updatedLastName}
+                  onChange={(e) => setUpdatedLastName(e.target.value)}
+                />
+              </div>
+
+              <div className="mb-3">
+                <label className="form-label fw-semibold">Gender:</label>
+                <div className="row">
+                  <div className="col-5">
+                    <select
+                      className="form-select form-select-sm"
+                      value={updatedGender}
+                      onChange={(e) => setUpdatedGender(e.target.value)}
+                    >
+                      <option value="Male">Male</option>
+                      <option value="Female">Female</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              <div className="mb-3">
+                <label className="form-label fw-semibold">Grade Level:</label>
+                <div className="row">
+                  <div className="col-5">
+                    <select
+                      className="form-select form-select-sm"
+                      value={updatedGradeId}
+                      onChange={(e) => setUpdatedGradeId(e.target.value)}
+                    >
+                      <option value="">Select Grade</option>
+                      {grades.map((grade) => (
+                        <option key={grade.id} value={grade.id}>
+                          {grade.grade_level}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              <div className="d-flex gap-2 justify-content-center">
+                <button
+                  className="btn btn-primary px-5 py-2 fw-bold"
+                  onClick={handleUpdateStudent}
+                >
+                  Update
+                </button>
+                <button
+                  className="btn btn-danger px-5 py-2 fw-bold"
+                  onClick={() => setUpdateModal(false)}
                 >
                   Cancel
                 </button>
