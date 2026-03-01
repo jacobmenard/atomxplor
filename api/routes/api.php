@@ -24,7 +24,6 @@ use App\Http\Controllers\ActivityParticipantController;
 */
 
 Route::post('/login', [AuthController::class, 'login']);
-Route::post('/logout', [AuthController::class, 'logout']);
 Route::post('/login-using-id', [AuthController::class, 'loginUsingID']);
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
@@ -33,6 +32,8 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 
 Route::prefix('v1')->group(function () {
     Route::middleware('auth:sanctum')->group(function() {
+        
+        Route::post('/logout', [AuthController::class, 'logout']);
         Route::resource('/activity', ActivityController::class);
         Route::prefix('/activities')->group(function () {
             Route::get('/student-participants-list', [ActivityController::class, 'studentParticipantsList']);
@@ -44,7 +45,6 @@ Route::prefix('v1')->group(function () {
         Route::get('/dashboard', [ActivityController::class, 'dashboard']);
 
         Route::prefix('activity')->group(function() {
-            Route::post('/{id}/submit-answer', [AnswerController::class, 'answer']);
             Route::get('/{id}/check-already-answered', [ActivityParticipantController::class, 'checkAlreadyAnswered']);
             Route::get('/get-object/{id}', [ActivityController::class, 'getObject']);
         });
@@ -60,6 +60,7 @@ Route::prefix('v1')->group(function () {
     // public apis
     Route::prefix('/public')->group(function() {
         Route::prefix('activity')->group(function() {
+            Route::post('/{id}/submit-answer', [AnswerController::class, 'answer']);
             Route::get('/list', [ActivityController::class, 'publicActivityList']);
             Route::get('/{id}', [ActivityController::class, 'show']);
         });
