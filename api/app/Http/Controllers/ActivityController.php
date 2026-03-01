@@ -47,11 +47,16 @@ class ActivityController extends Controller
 
     }
 
-    public function publicActivityList(Activity $activity) {
+    public function publicActivityList(Activity $activity, Request $request) {
         
 
-        $activities = $activity->orderBy('time_started', 'desc')
-                                ->get();
+        $activities = $activity->orderBy('time_started', 'desc');
+
+        if (isset($request->activity_id)) {
+            $activities = $activities->where('id', 'like', '%' . $request->activity_id . '%');
+        }
+
+        $activities = $activities->get();
 
         return ActivityResources::collection($activities);
 

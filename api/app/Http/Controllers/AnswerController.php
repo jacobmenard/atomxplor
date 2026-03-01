@@ -68,9 +68,11 @@ class AnswerController extends Controller
 
     public function answer(Request $request, $id, Answer $answer, Question $question, ActivityParticipant $activityParticipant) {
         try {
-            if (isset($request->student_id)) {
-                return error(null, 'Student ID is not required before submitting answers.');
+            if (!isset($request->student_id)) {
+                return error(null, 'Student ID is required before submitting answers.');
             }
+
+            $userId = $request->student_id;
             
             if (count($request->answers) <= 0) {
                 return error(null, 'Answers are required.');
@@ -79,11 +81,9 @@ class AnswerController extends Controller
                 $incorrect = 0;
                 $total = 0;
                 
-                $getActivityParticipant = $activityParticipant->where('activity_id', $id)->where('user_id', $user->id)->first();
-
                 foreach ($request->answers as $answerData) {
                     $answer->create([
-                        'user_id' => $user->id,
+                        'user_id' => $userId,
                         'activity_id' => $id,
                         'question_id' => $answerData['question_id'],
                         'correct_answer' => $answerData['correct_answer'],
@@ -99,13 +99,16 @@ class AnswerController extends Controller
                     $total++;
                 }
                 
-                if ($getActivityParticipant) {
-                    $getActivityParticipant->update([
-                        'correct_activity_answers' => $correct, 
-                        'incorrect_activity_answers' => $incorrect,
-                        'activity_items' => $total,
-                    ]);
-                }
+                $activityParticipant->updateOrCreate(
+                [
+                    'activity_id' => $id,
+                    'user_id' => $userId,
+                ],
+                [
+                    'correct_activity_answers' => $correct, 
+                    'incorrect_activity_answers' => $incorrect,
+                    'activity_items' => $total,
+                ]);
             }
 
             $score = [
