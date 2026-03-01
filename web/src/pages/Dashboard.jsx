@@ -20,7 +20,7 @@ const Dashboard = () => {
         return;
       }
 
-      const response = await fetch("http://localhost:8000/api/logout", {
+      const response = await fetch("http://localhost:8000/api/v1/logout", {
         method: "POST",
         headers: {
           Accept: "application/json",

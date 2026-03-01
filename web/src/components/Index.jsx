@@ -127,39 +127,49 @@ const Index = () => {
               <div className="spinner-border text-primary" role="status" />
             </div>
           ) : (
-            activity.map((act) => (
-              <div
-                key={act.id}
-                className="d-flex justify-content-between align-items-center border rounded-4 p-3 mt-3 bg-white shadow-sm flex-wrap text-center"
-                onClick={() => {
-                  navigate("/dashboard/participants", {
-                    state: { activityId: act.id },
-                  });
-                }}
-                style={{ cursor: "pointer" }}
-              >
-                <p className="fw-bold mb-0 flex-fill">
-                  {act.title || "Untitled"}
-                </p>
-                <p className="mb-0 flex-fill">
-                  {act.score || 0}/{act.items || 20}
-                </p>
-                <p className="mb-0 flex-fill">{act.time_started}</p>
-                <p className="mb-0 flex-fill">{act.time_ended}</p>
-                <button
-                  className="bg-white border-0 fw-bold"
-                  style={{
-                    color:
-                      act.activity_action === "not_start"
-                        ? "#FF0000"
-                        : "#08CB00",
-                  }}
-                  onClick={() => setShowModalStart(true)}
-                >
-                  {act.activity_action.toUpperCase()}
-                </button>
-              </div>
-            ))
+            <div className="table-responsive  mt-4">
+              <table className="table text-center align-middle">
+                <thead className="bg-primary text-white">
+                  <tr>
+                    <th className="bg-primary text-white text-start">ID</th>
+                    <th className="bg-primary text-white">Title</th>
+                    <th className="bg-primary text-white">Items</th>
+                    <th className="bg-primary text-white">Time Started</th>
+                    <th className="bg-primary text-white">Time Ended</th>
+                    <th className="bg-primary text-white">Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {activity.length === 0 ? (
+                    <div className="text-center py-5 text-muted">
+                      <p>No activities found. Create one to get started!</p>
+                    </div>
+                  ) : (
+                    activity.map((act, index) => (
+                      <tr key={act.id}>
+                        <td className="text-start">{index + 1}</td>
+                        <td>{act.title}</td>
+                        <td>
+                          {act.score || 0} / {act.items || 0}
+                        </td>
+                        <td>{act.time_started}</td>
+                        <td>{act.time_ended}</td>
+                        <td>
+                          <div className="d-flex justify-content-center gap-2">
+                            <button className="btn btn-primary btn-sm">
+                              Update
+                            </button>
+                            <button className="btn btn-danger btn-sm">
+                              Delete
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
           )}
         </div>
 

@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 const Public = () => {
-  const [showModal, setShowModal] = useState(false);
   const [activity, setActivity] = useState([]);
   const [message, setMessage] = useState("");
   const [checkAnswerModal, setCheckAnswerModal] = useState(false);
@@ -16,20 +15,12 @@ const Public = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const authToken = localStorage.getItem("authToken");
-    if (!authToken) {
-      navigate("/");
-      return;
-    }
-
     const fetchActivity = async () => {
       try {
         const response = await fetch(
           "http://127.0.0.1:8000/api/v1/public/activity/list",
           {
-            headers: {
-              Authorization: `Bearer ${authToken}`,
-            },
+            method: "GET",
           }
         );
 
@@ -46,9 +37,6 @@ const Public = () => {
   }, [navigate]);
 
   const studentSignIn = async () => {
-    const authToken = localStorage.getItem("authToken");
-    if (!authToken) return navigate("/");
-
     setIsLoading(true);
 
     try {
@@ -56,7 +44,6 @@ const Public = () => {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${authToken}`,
         },
         body: JSON.stringify({
           student_id_number: studentId,
@@ -80,7 +67,7 @@ const Public = () => {
   };
 
   const navigatorToQuestion = async (item) => {
-    const authToken = localStorage.getItem("authToken");
+    const authToken = localStorage.getItem("studentToken");
     if (!authToken) return navigate("/");
 
     setIsLoading(true);
@@ -117,9 +104,7 @@ const Public = () => {
   return (
     <div className="">
       <div className="d-flex justify-content-end mt-3 me-3 sticky-top">
-        <button className="btn btn-primary" onClick={() => setShowModal(true)}>
-          Search Activity
-        </button>
+        <button className="btn btn-primary">Search Activity</button>
       </div>
 
       <div className="mb-2">
