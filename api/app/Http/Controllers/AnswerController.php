@@ -68,7 +68,9 @@ class AnswerController extends Controller
 
     public function answer(Request $request, $id, Answer $answer, Question $question, ActivityParticipant $activityParticipant) {
         try {
-            $user = Auth::user();
+            if (isset($request->student_id)) {
+                return error(null, 'Student ID is not required before submitting answers.');
+            }
             
             if (count($request->answers) <= 0) {
                 return error(null, 'Answers are required.');
