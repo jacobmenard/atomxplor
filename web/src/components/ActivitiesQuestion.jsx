@@ -7,6 +7,7 @@ const ActivityQuestion = () => {
 
   const activityId = state?.activityId;
   const studentToken = localStorage.getItem("studentToken");
+  const studentId = localStorage.getItem("student_id");
 
   const [activity, setActivity] = useState(null);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -49,19 +50,29 @@ const ActivityQuestion = () => {
   const isLastQuestion = currentIndex === activity?.questionaires?.length - 1;
 
   const handleSubmit = async () => {
+    if (!activity?.questionaires || !studentId) return;
+
     setIsSubmitting(true);
 
     const payload = {
-      answers: activity.questionaires.map((q) => ({
-        question_id: q.question.id,
-        correct_answer: q.question.answer?.toString().trim().toLowerCase(),
-        user_answer: answers[q.question.id]?.toString().trim().toLowerCase(),
-      })),
+      answers: activity.questionaires.map((q) => {
+        const questionId = q.question.id;
+
+        return {
+          question_id: questionId,
+          correct_answer: String(q.question.answer || "")
+            .trim()
+            .toLowerCase(),
+          user_answer: String(answers[questionId] || "")
+            .trim()
+            .toLowerCase(),
+        };
+      }),
     };
 
     try {
       const response = await fetch(
-        `http://127.0.0.1:8000/api/v1/activity/${activityId}/submit-answer`,
+        `http://127.0.0.1:8000/api/v1/public/activity/${activityId}/submit-answer?student_id=${studentId}`,
         {
           method: "POST",
           headers: {
@@ -91,7 +102,7 @@ const ActivityQuestion = () => {
           <h4 className="fw-bold mb-1">Welcome Student</h4>
           <p className="mb-0 fw-semibold">Activity title: {activity?.title}</p>
           <small className="text-muted">
-            Hosted by: {activity?.user.name || "Teacher unknown"}
+            Hosted by: {activity?.user?.name || "Teacher unknown"}
           </small>
         </div>
 
@@ -139,11 +150,14 @@ const ActivityQuestion = () => {
                 className="form-check-input"
                 type="radio"
                 name={`question-${currentQuestion.id}`}
-                checked={answers[currentQuestion.id] === opt.question_choice}
+                checked={
+                  answers[currentQuestion.id]?.toLowerCase() ===
+                  opt.question_choice?.toLowerCase()
+                }
                 onChange={() =>
                   setAnswers({
                     ...answers,
-                    [currentQuestion.id]: opt.question_choice,
+                    [currentQuestion.id]: opt.question_choice.toLowerCase(),
                   })
                 }
               />

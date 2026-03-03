@@ -7,6 +7,12 @@ const Dashboard = () => {
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
+  const authToken = localStorage.getItem("authToken");
+
+  if (!authToken) {
+    navigate("/");
+    return;
+  }
   const handleLogout = async () => {
     try {
       setIsLoggingOut(true);

@@ -141,9 +141,9 @@ const Index = () => {
                 </thead>
                 <tbody>
                   {activity.length === 0 ? (
-                    <div className="text-center py-5 text-muted">
-                      <p>No activities found. Create one to get started!</p>
-                    </div>
+                    <tr>
+                      <td colSpan="5">No Activities Found</td>
+                    </tr>
                   ) : (
                     activity.map((act, index) => (
                       <tr key={act.id}>

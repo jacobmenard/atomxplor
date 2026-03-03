@@ -8,6 +8,12 @@ const ParticipantList = () => {
   const activityId = location.state?.activityId;
   const navigate = useNavigate();
 
+  const authToken = localStorage.getItem("authToken");
+
+  if (!authToken) {
+    navigate("/");
+  }
+
   const studentParticipants = async () => {
     const authToken = localStorage.getItem("authToken");
 
@@ -131,11 +137,7 @@ const ParticipantList = () => {
           <tbody>
             {participants.length === 0 ? (
               <tr>
-                <td colSpan={4}>
-                  <div className="d-flex justify-content-center align-items-center py-2">
-                    <h5>No Participants Found</h5>
-                  </div>
-                </td>
+                <td colSpan="5">No Participants Found</td>
               </tr>
             ) : (
               participants.map((participant) => (
