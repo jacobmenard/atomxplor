@@ -127,10 +127,10 @@ const ParticipantList = () => {
         <table className="table text-center align-middle">
           <thead>
             <tr>
-              <th>Name</th>
-              <th>Correct Answer</th>
-              <th>Incorrect</th>
-              <th>Total Items</th>
+              <th className="bg-primary text-white">Name</th>
+              <th className="bg-primary text-white">Correct Answer</th>
+              <th className="bg-primary text-white">Incorrect</th>
+              <th className="bg-primary text-white">Total Items</th>
             </tr>
           </thead>
 
