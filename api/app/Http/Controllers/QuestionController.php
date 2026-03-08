@@ -12,12 +12,15 @@ class QuestionController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index(Question $question)
+    public function index(Question $question, Request $request)
     {
-        //
-        $questions = $question
-                    ->orderBy('created_at', 'desc')
-                    ->get();
+        $questions = $question;
+
+        if (isset($request->search)) {
+            $questions = $questions->where('question', 'like', '%' . $request->search . '%');
+        }
+
+        $questions = $questions->orderBy('created_at', 'desc')->get();
 
         return success(QuestionResource::collection($questions), '');
 

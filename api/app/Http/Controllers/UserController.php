@@ -18,8 +18,13 @@ class UserController extends Controller
                     ->whereHas('user_profile', function ($query) use ($search) {
                         $query->where('first_name', 'like', '%' . $search . '%')
                             ->orWhere('last_name', 'like', '%' . $search . '%');
-                    })
-                    ->get();
+                    });
+
+        if (isset($request->search)) {           
+            $students = $students->where('name', 'like', '%' . $search . '%');
+        }
+
+        $students = $students->get();
 
         return success(UserResource::collection($students), '');
         
