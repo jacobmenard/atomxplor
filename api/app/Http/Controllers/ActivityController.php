@@ -17,14 +17,18 @@ class ActivityController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index(Activity $activity)
+    public function index(Activity $activity, Request $request)
     {
         //
         $user = Auth::user();
 
-        $activities = $activity->where('user_id', $user->id)
-                                ->orderBy('time_started', 'desc')
-                                ->get();
+        $activities = $activity->where('user_id', $user->id);
+
+        if(isset($request->search)) {
+            $activities = $activities->where('title', 'like', '%' . $request->search . '%');
+        }
+        
+        $activities = $activities->orderBy('time_started', 'desc')->get();
 
         return ActivityResources::collection($activities);
     }
@@ -50,7 +54,7 @@ class ActivityController extends Controller
     public function publicActivityList(Activity $activity, Request $request) {
         
 
-        $activities = $activity->orderBy('time_started', 'desc');
+        $activities = $activity->whereIn('activity_action', ['started', 'paused'])->orderBy('time_started', 'desc');
 
         if (isset($request->activity_id)) {
             $activities = $activities->where('id', 'like', '%' . $request->activity_id . '%');
