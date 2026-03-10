@@ -22,6 +22,8 @@ const Students = () => {
   const [updatedGradeId, setUpdatedGradeId] = useState("");
   const [updatedStudentIdNumber, setUpdatedStudentIdNumber] = useState("");
 
+  const [search, setSearch] = useState("");
+
   const navigate = useNavigate();
 
   const fetchStudents = async () => {
@@ -52,6 +54,35 @@ const Students = () => {
       setStudents([]);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const searchStudent = async () => {
+    const authToken = localStorage.getItem("authToken");
+
+    if (!authToken) {
+      navigate("/");
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        `http://127.0.0.1:8000/api/v1/students/list?search=${search}`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${authToken}`,
+          },
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) throw new Error();
+
+      setStudents(data.data || []);
+    } catch {
+      setMessage("Failed to search students");
     }
   };
 
@@ -165,9 +196,15 @@ const Students = () => {
     fetchStudents();
   }, []);
 
+  useEffect(() => {
+    if (search === "") {
+      fetchStudents();
+    }
+  }, [search]);
+
   return (
-    <div className="d-flex flex-column">
-      <div className="d-flex flex-row justify-content-between align-items-center mt-4">
+    <div className="d-flex flex-column mt-4">
+      <div className="d-flex flex-row justify-content-between align-items-center mb-3">
         <h3 className="fw-semibold">Student List</h3>
         <button
           className="btn btn-primary"
@@ -177,9 +214,24 @@ const Students = () => {
         </button>
       </div>
 
+      <div className="d-flex justify-content-end align-items-center">
+        <input
+          type="text"
+          placeholder="search student"
+          className="form-control me-1"
+          style={{ width: "250px" }}
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
+
+        <button className="btn btn-primary" onClick={searchStudent}>
+          Search
+        </button>
+      </div>
+
       {message && <div className="alert alert-danger mt-3">{message}</div>}
 
-      <div className="table-responsive mt-4">
+      <div className="table-responsive mt-2">
         {isLoading ? (
           <div className="text-center py-5">
             <div className="spinner-border text-primary" />
@@ -194,6 +246,7 @@ const Students = () => {
                 <th className="bg-primary text-white">Action</th>
               </tr>
             </thead>
+
             <tbody>
               {students.length === 0 ? (
                 <tr>
@@ -213,6 +266,7 @@ const Students = () => {
                         >
                           Update
                         </button>
+
                         <button className="btn btn-danger btn-sm">
                           Delete
                         </button>
@@ -269,38 +323,30 @@ const Students = () => {
 
               <div className="mb-3">
                 <label className="form-label fw-semibold">Gender:</label>
-                <div className="row">
-                  <div className="col-5">
-                    <select
-                      className="form-select form-select-sm"
-                      value={gender}
-                      onChange={(e) => setGender(e.target.value)}
-                    >
-                      <option value="Male">Male</option>
-                      <option value="Female">Female</option>
-                    </select>
-                  </div>
-                </div>
+                <select
+                  className="form-select form-select-sm"
+                  value={gender}
+                  onChange={(e) => setGender(e.target.value)}
+                >
+                  <option value="Male">Male</option>
+                  <option value="Female">Female</option>
+                </select>
               </div>
 
               <div className="mb-3">
                 <label className="form-label fw-semibold">Grade Level:</label>
-                <div className="row">
-                  <div className="col-5">
-                    <select
-                      className="form-select form-select-sm"
-                      value={gradeId}
-                      onChange={(e) => setGradeId(e.target.value)}
-                    >
-                      <option value="">Select Grade</option>
-                      {grades.map((grade) => (
-                        <option key={grade.id} value={grade.id}>
-                          {grade.grade_level}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
+                <select
+                  className="form-select form-select-sm"
+                  value={gradeId}
+                  onChange={(e) => setGradeId(e.target.value)}
+                >
+                  <option value="">Select Grade</option>
+                  {grades.map((grade) => (
+                    <option key={grade.id} value={grade.id}>
+                      {grade.grade_level}
+                    </option>
+                  ))}
+                </select>
               </div>
 
               <div className="d-flex gap-2 justify-content-center">
@@ -331,73 +377,48 @@ const Students = () => {
             <div className="modal-content p-4 rounded-4 border-0">
               <h4 className="text-center fw-bold mb-4">Update Student</h4>
 
-              <div className="mb-3">
-                <label className="form-label fw-semibold">
-                  Student ID Number:
-                </label>
-                <input
-                  type="number"
-                  className="form-control"
-                  value={updatedStudentIdNumber}
-                  onChange={(e) => setUpdatedStudentIdNumber(e.target.value)}
-                />
-              </div>
+              <input
+                type="number"
+                className="form-control mb-3"
+                value={updatedStudentIdNumber}
+                onChange={(e) => setUpdatedStudentIdNumber(e.target.value)}
+              />
 
-              <div className="mb-3">
-                <label className="form-label fw-semibold">First Name:</label>
-                <input
-                  type="text"
-                  className="form-control"
-                  value={updatedFirstName}
-                  onChange={(e) => setUpdatedFirstName(e.target.value)}
-                />
-              </div>
+              <input
+                type="text"
+                className="form-control mb-3"
+                value={updatedFirstName}
+                onChange={(e) => setUpdatedFirstName(e.target.value)}
+              />
 
-              <div className="mb-3">
-                <label className="form-label fw-semibold">Last Name:</label>
-                <input
-                  type="text"
-                  className="form-control"
-                  value={updatedLastName}
-                  onChange={(e) => setUpdatedLastName(e.target.value)}
-                />
-              </div>
+              <input
+                type="text"
+                className="form-control mb-3"
+                value={updatedLastName}
+                onChange={(e) => setUpdatedLastName(e.target.value)}
+              />
 
-              <div className="mb-3">
-                <label className="form-label fw-semibold">Gender:</label>
-                <div className="row">
-                  <div className="col-5">
-                    <select
-                      className="form-select form-select-sm"
-                      value={updatedGender}
-                      onChange={(e) => setUpdatedGender(e.target.value)}
-                    >
-                      <option value="Male">Male</option>
-                      <option value="Female">Female</option>
-                    </select>
-                  </div>
-                </div>
-              </div>
+              <select
+                className="form-select mb-3"
+                value={updatedGender}
+                onChange={(e) => setUpdatedGender(e.target.value)}
+              >
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+              </select>
 
-              <div className="mb-3">
-                <label className="form-label fw-semibold">Grade Level:</label>
-                <div className="row">
-                  <div className="col-5">
-                    <select
-                      className="form-select form-select-sm"
-                      value={updatedGradeId}
-                      onChange={(e) => setUpdatedGradeId(e.target.value)}
-                    >
-                      <option value="">Select Grade</option>
-                      {grades.map((grade) => (
-                        <option key={grade.id} value={grade.id}>
-                          {grade.grade_level}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-              </div>
+              <select
+                className="form-select mb-3"
+                value={updatedGradeId}
+                onChange={(e) => setUpdatedGradeId(e.target.value)}
+              >
+                <option value="">Select Grade</option>
+                {grades.map((grade) => (
+                  <option key={grade.id} value={grade.id}>
+                    {grade.grade_level}
+                  </option>
+                ))}
+              </select>
 
               <div className="d-flex gap-2 justify-content-center">
                 <button
@@ -406,6 +427,7 @@ const Students = () => {
                 >
                   Update
                 </button>
+
                 <button
                   className="btn btn-danger px-5 py-2 fw-bold"
                   onClick={() => setUpdateModal(false)}

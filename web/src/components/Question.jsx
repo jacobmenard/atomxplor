@@ -21,6 +21,8 @@ const Question = () => {
   const [subjects, setSubjects] = useState([]);
   const [selectedSubjectId, setSelectedSubjectId] = useState(subjectId || "");
 
+  const [search, setSearch] = useState("");
+
   const [updatedSubjectId, setUpdateSubjectId] = useState("");
   const [updatedQuestion, setUpdatedQuestion] = useState("");
   const [updatedAnswer, setUpdatedAnswer] = useState("");
@@ -64,7 +66,7 @@ const Question = () => {
       setMessage(error.message);
       setMessageType("error");
     }
-  }, []);
+  }, [selectedSubjectId]);
 
   useEffect(() => {
     const authToken = localStorage.getItem("authToken");
@@ -104,6 +106,13 @@ const Question = () => {
       fetchQuestions();
     }
   }, [selectedSubjectId, fetchQuestions]);
+
+  // ✅ Fixed useEffect: fetch questions automatically if search is empty
+  useEffect(() => {
+    if (search === "") {
+      fetchQuestions();
+    }
+  }, [search, fetchQuestions]);
 
   const resetModal = () => {
     setQuestion("");
@@ -338,6 +347,33 @@ const Question = () => {
     }
   };
 
+  const searchQuestion = async () => {
+    const authToken = localStorage.getItem("authToken");
+
+    if (!authToken) {
+      navigate("/");
+    }
+
+    try {
+      const response = await fetch(
+        `http://127.0.0.1:8000/api/v1/question?search=${search}`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${authToken}`,
+          },
+        }
+      );
+      const data = await response.json();
+
+      if (!response.ok) throw new Error(data.message || "Failed to Search");
+
+      setQuestions(data.data);
+    } catch (error) {
+      setMessage(error.message);
+    }
+  };
+
   const getAlertClass = () => {
     if (messageType === "success") return "alert-success";
     if (messageType === "error") return "alert-danger";
@@ -345,8 +381,8 @@ const Question = () => {
   };
 
   return (
-    <div>
-      <div className="d-flex justify-content-between align-items-center mt-4">
+    <div className="container mt-4">
+      <div className="d-flex justify-content-between align-items-center p-2 pe-0">
         <h2 className="fw-bold">Question List</h2>
         <button
           className="btn btn-primary"
@@ -359,11 +395,25 @@ const Question = () => {
         </button>
       </div>
 
+      <div className="d-flex justify-content-end align-items-center mb-2">
+        <input
+          type="text"
+          placeholder="Search Question"
+          className="form-control me-1"
+          style={{ width: "250px" }}
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
+        <button className="btn btn-primary" onClick={searchQuestion}>
+          Search
+        </button>
+      </div>
+
       {message && (
         <div className={`alert ${getAlertClass()} mt-3`}>{message}</div>
       )}
 
-      <div className="table-responsive mt-4">
+      <div className="table-responsive mt-2">
         {isLoading ? (
           <div className="text-center py-5">
             <div className="spinner-border text-primary" />
@@ -389,7 +439,11 @@ const Question = () => {
                   <tr key={q.id}>
                     <td className="text-start">{index + 1}</td>
                     <td>{q.question}</td>
-                    <td>{q.question_type}</td>
+                    <td>
+                      {q.question_type === "multiple_choice"
+                        ? "MULTIPLE CHOICE"
+                        : q.question_type.toUpperCase().replaceAll("_", " ")}
+                    </td>
                     <td>{q.subject?.subject}</td>
                     <td>
                       <div className="d-flex justify-content-center gap-2">

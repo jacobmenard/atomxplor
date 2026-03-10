@@ -152,7 +152,7 @@ const Public = () => {
   };
 
   return (
-    <div>
+    <div className="p-2">
       <div className="d-flex justify-content-end mt-3 me-3 mb-3 sticky-top">
         {isLogin ? (
           <div className="position-relative" ref={dropdownRef}>
@@ -197,7 +197,7 @@ const Public = () => {
           </div>
         ) : (
           <button
-            className="btn btn-primary"
+            className="btn btn-primary "
             onClick={() => setStudentLoginModal(true)}
           >
             Login

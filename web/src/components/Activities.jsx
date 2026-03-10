@@ -2,12 +2,10 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 const Activities = () => {
-  const [showModalStart, setShowModalStart] = useState(false);
   const [activityModal, setActivityModal] = useState(false);
   const [activity, setActivity] = useState([]);
   const [subjects, setSubjects] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-
   const [error, setError] = useState("");
 
   const [title, setTitle] = useState("");
@@ -16,43 +14,24 @@ const Activities = () => {
   const [startTime, setStartTime] = useState("");
   const [endTime, setEndTime] = useState("");
 
+  const [search, setSearch] = useState("");
+
   const navigate = useNavigate();
 
   useEffect(() => {
     const authToken = localStorage.getItem("authToken");
-
     if (!authToken) {
       navigate("/");
       return;
     }
-
-    const fetchActivity = async () => {
-      try {
-        const response = await fetch("http://127.0.0.1:8000/api/v1/activity", {
-          method: "GET",
-          headers: { Authorization: `Bearer ${authToken}` },
-        });
-
-        const data = await response.json();
-        if (!response.ok) throw new Error();
-
-        setActivity(data.data);
-      } catch {
-        setError("Failed to load activities");
-      } finally {
-        setIsLoading(false);
-      }
-    };
 
     const fetchSubjects = async () => {
       try {
         const response = await fetch("http://127.0.0.1:8000/api/v1/subject", {
           headers: { Authorization: `Bearer ${authToken}` },
         });
-
         const data = await response.json();
         if (!response.ok) throw new Error();
-
         setSubjects(data.data || []);
         if (data.data?.length) setSubject(data.data[0].id);
       } catch {
@@ -60,18 +39,67 @@ const Activities = () => {
       }
     };
 
-    fetchActivity();
     fetchSubjects();
   }, [navigate]);
 
+  const fetchActivity = async () => {
+    const authToken = localStorage.getItem("authToken");
+    if (!authToken) {
+      navigate("/");
+      return;
+    }
+
+    try {
+      const response = await fetch("http://127.0.0.1:8000/api/v1/activity", {
+        method: "GET",
+        headers: { Authorization: `Bearer ${authToken}` },
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error();
+      setActivity(data.data || []);
+    } catch {
+      setError("Failed to load activities");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchActivity();
+  }, []);
+
+  const searchActivity = async () => {
+    const authToken = localStorage.getItem("authToken");
+    if (!authToken) return;
+
+    try {
+      const response = await fetch(
+        `http://127.0.0.1:8000/api/v1/activity?search=${search}`,
+        {
+          method: "GET",
+          headers: { Authorization: `Bearer ${authToken}` },
+        }
+      );
+      const data = await response.json();
+      if (!response.ok) throw new Error();
+      setActivity(data.data || []);
+    } catch {
+      setError("Failed to search activities");
+    }
+  };
+
+  useEffect(() => {
+    if (search === "") {
+      fetchActivity();
+    }
+  }, [search]);
+
   const createActivity = async (e) => {
     e.preventDefault();
-
     if (!title || !items || !startTime || !endTime) {
       setError("All fields are required.");
       return;
     }
-
     if (new Date(endTime) <= new Date(startTime)) {
       setError("Ending time must be after starting time.");
       return;
@@ -79,7 +107,6 @@ const Activities = () => {
 
     const authToken = localStorage.getItem("authToken");
     const userID = localStorage.getItem("id");
-
     if (!authToken || !userID) {
       navigate("/");
       return;
@@ -112,17 +139,7 @@ const Activities = () => {
       setStartTime("");
       setEndTime("");
       setError("");
-
-      const authTokenRefresh = localStorage.getItem("authToken");
-      const refreshResponse = await fetch(
-        "http://127.0.0.1:8000/api/v1/activity",
-        {
-          method: "GET",
-          headers: { Authorization: `Bearer ${authTokenRefresh}` },
-        }
-      );
-      const refreshData = await refreshResponse.json();
-      if (refreshResponse.ok) setActivity(refreshData.data);
+      fetchActivity();
     } catch (err) {
       setError(err.message);
     }
@@ -135,13 +152,28 @@ const Activities = () => {
           <p className="mb-0">{error}</p>
         </div>
       )}
-      <div className="d-flex justify-content-between align-items-center p-3">
+
+      <div className="d-flex justify-content-between align-items-center p-2 pe-0">
         <h2 className="m-0">Activity List</h2>
         <button
           className="btn btn-primary"
           onClick={() => setActivityModal(true)}
         >
           New Activity
+        </button>
+      </div>
+
+      <div className="d-flex justify-content-end align-items-center mb-3">
+        <input
+          type="text"
+          placeholder="Search activity..."
+          className="form-control me-1"
+          style={{ width: "250px" }}
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
+        <button className="btn btn-primary" onClick={searchActivity}>
+          Search
         </button>
       </div>
 
@@ -245,10 +277,6 @@ const Activities = () => {
         <div className="text-center py-5">
           <div className="spinner-border text-primary" role="status" />
         </div>
-      ) : activity.length === 0 ? (
-        <div className="text-center py-5 text-muted">
-          <p>No activities found. Create one to get started!</p>
-        </div>
       ) : (
         <div className="table-responsive mt-3">
           <table className="table table-bordered align-middle text-center shadow-sm">
@@ -262,56 +290,42 @@ const Activities = () => {
               </tr>
             </thead>
             <tbody>
-              {activity.map((act) => (
-                <tr
-                  key={act.id}
-                  style={{ cursor: "pointer" }}
-                  onClick={() => {
-                    navigate("/dashboard/participants", {
-                      state: { activityId: act.id },
-                    });
-                  }}
-                >
-                  <td>{act.title}</td>
-                  <td>
-                    {act.score || 0}/{act.items}
-                  </td>
-                  <td>{act.time_started}</td>
-                  <td>{act.time_ended}</td>
-                  <td>
-                    <div className="d-flex justify-content-center gap-2">
-                      <button className="btn btn-primary btn-sm">Update</button>
-                      <button className="btn btn-danger btn-sm">Delete</button>
-                    </div>
-                  </td>
+              {activity.length === 0 ? (
+                <tr>
+                  <td colSpan="4">No Activities found</td>
                 </tr>
-              ))}
+              ) : (
+                activity.map((act) => (
+                  <tr
+                    key={act.id}
+                    style={{ cursor: "pointer" }}
+                    onClick={() => {
+                      navigate("/dashboard/participants", {
+                        state: { activityId: act.id },
+                      });
+                    }}
+                  >
+                    <td>{act.title}</td>
+                    <td>
+                      {act.score || 0}/{act.items}
+                    </td>
+                    <td>{act.time_started}</td>
+                    <td>{act.time_ended}</td>
+                    <td>
+                      <div className="d-flex justify-content-center gap-2">
+                        <button className="btn btn-primary btn-sm">
+                          Update
+                        </button>
+                        <button className="btn btn-danger btn-sm">
+                          Delete
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
-        </div>
-      )}
-
-      {showModalStart && (
-        <div
-          className="modal fade show d-block"
-          tabIndex="-1"
-          style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
-        >
-          <div className="modal-dialog modal-dialog-centered">
-            <div className="modal-content p-4 text-center">
-              <h5 className="fw-bold mb-2">Message alert!</h5>
-              <p className="mb-4">Do you want to start the activity?</p>
-              <div className="d-flex justify-content-center gap-3">
-                <button className="btn btn-primary">Yes, start now</button>
-                <button
-                  className="btn btn-danger"
-                  onClick={() => setShowModalStart(false)}
-                >
-                  No, not yet
-                </button>
-              </div>
-            </div>
-          </div>
         </div>
       )}
     </div>

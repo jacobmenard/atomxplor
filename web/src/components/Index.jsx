@@ -136,7 +136,6 @@ const Index = () => {
                     <th className="bg-primary text-white">Items</th>
                     <th className="bg-primary text-white">Time Started</th>
                     <th className="bg-primary text-white">Time Ended</th>
-                    <th className="bg-primary text-white">Action</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -154,16 +153,6 @@ const Index = () => {
                         </td>
                         <td>{act.time_started}</td>
                         <td>{act.time_ended}</td>
-                        <td>
-                          <div className="d-flex justify-content-center gap-2">
-                            <button className="btn btn-primary btn-sm">
-                              Update
-                            </button>
-                            <button className="btn btn-danger btn-sm">
-                              Delete
-                            </button>
-                          </div>
-                        </td>
                       </tr>
                     ))
                   )}
