@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import Badge from 'react-bootstrap/Badge';
 
 const ParticipantList = () => {
   const [participants, setParticipants] = useState([]);
+  const [activityObjects, setActivityObjects] = useState([]);
 
   const location = useLocation();
   const activityId = location.state?.activityId;
@@ -44,7 +46,36 @@ const ParticipantList = () => {
     }
   };
 
-  const action = participants[0]?.activity?.activity_action;
+  const activityObject = async () => {
+    const authToken = localStorage.getItem("authToken");
+    if (!authToken) {
+      navigate("/");
+      return;
+    }
+    try {
+      const response = await fetch(
+        `http://127.0.0.1:8000/api/v1/activity/get-object/${activityId}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${authToken}`,
+          },
+        }
+      );
+      
+      const data = await response.json();
+
+      if (!response.ok) throw new Error(data.message);
+
+      setActivityObjects(data.data);
+    } catch (error) {
+      console.log(error.message);
+    }
+  };
+
+
+  const action = activityObjects?.activity_action;
 
   const activityAction = async (actionButton) => {
     const authToken = localStorage.getItem("authToken");
@@ -69,7 +100,7 @@ const ParticipantList = () => {
             Authorization: `Bearer ${authToken}`,
           },
           body: JSON.stringify({
-            activity_id: activityId,
+            activity_id: activityObjects.id,
             activity_action: actionButton,
           }),
         }
@@ -80,6 +111,7 @@ const ParticipantList = () => {
       if (!response.ok) throw new Error(data.message);
 
       console.log("Successful update action");
+      await activityObject();
       await studentParticipants();
     } catch (error) {
       console.log("Activity action error:", error.message);
@@ -89,17 +121,22 @@ const ParticipantList = () => {
   useEffect(() => {
     if (activityId) {
       studentParticipants();
+      activityObject();
     }
   }, [activityId]);
 
   return (
     <div className="container mt-4">
-      <div className="d-flex justify-content-between align-items-center p-3">
-        <h2>Student Participants List</h2>
+      
+      <h2 className="mb-3">Student Participants List</h2>
+
+      <div className="d-flex justify-content-between align-items-center gap-2 my-3">
+        <h4>Activity Information</h4>
+
         <div className="d-flex gap-2">
           <button
             className="btn btn-primary"
-            disabled={action === "started" || action === "done"}
+            disabled={action !== "paused" && action !== "done"}
             onClick={() => activityAction("started")}
           >
             Start Activity
@@ -122,7 +159,22 @@ const ParticipantList = () => {
           </button>
         </div>
       </div>
+      <div className="d-flex flex-column gap-2 mb-3 p-3 border rounded shadow-sm">
+        <div>
+          Activity ID: <strong>{activityObjects?.id || "N/A"}</strong>
+        </div>
+        <div>
+          Activity title: <strong>{activityObjects?.title || "N/A"}</strong>
+        </div>
+        <div className="d-flex align-items-center gap-2">
+          Activity action: 
+          <Badge pill bg={activityObjects?.activity_action === 'started' ? 'primary' : activityObjects?.activity_action === 'paused' ? 'warning' : activityObjects?.activity_action === 'not_started' ? 'secondary' : 'success'}>
+            {activityObjects?.activity_action === 'started' ? 'Started' : activityObjects?.activity_action === 'paused' ? 'Paused' : activityObjects?.activity_action === 'not_started' ? 'Not Started' : 'Done'}
+          </Badge>
+        </div>  
+      </div>
 
+      <h4 className="my-3">Activity Participants</h4>
       <div className="table-responsive mt-4">
         <table className="table text-center align-middle">
           <thead>

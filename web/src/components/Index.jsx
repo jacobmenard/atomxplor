@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import Badge from 'react-bootstrap/Badge';
 
 const Index = () => {
   const [user, setUser] = useState(null);
@@ -136,6 +137,7 @@ const Index = () => {
                     <th className="bg-primary text-white">Items</th>
                     <th className="bg-primary text-white">Time Started</th>
                     <th className="bg-primary text-white">Time Ended</th>
+                    <th className="bg-primary text-white">Status</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -149,10 +151,25 @@ const Index = () => {
                         <td className="text-start">{index + 1}</td>
                         <td>{act.title}</td>
                         <td>
-                          {act.score || 0} / {act.items || 0}
+                          {act.items || 0}
                         </td>
                         <td>{act.time_started}</td>
                         <td>{act.time_ended}</td>
+                        <td>
+                          <Badge pill bg={
+                            act.activity_action === "started"
+                              ? "primary"
+                              : act.activity_action === "paused"
+                              ? "warning"
+                              : "success"
+                          }>
+                            {act.activity_action === "started"
+                              ? "Started"
+                              : act.activity_action === "paused"
+                              ? "Paused"
+                              : "Done"}
+                          </Badge>
+                        </td>
                       </tr>
                     ))
                   )}

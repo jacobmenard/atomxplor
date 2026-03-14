@@ -514,8 +514,8 @@ const Question = () => {
                 <div className="d-flex gap-2">
                   {[
                     { value: "multiple_choice", label: "Multiple Choice" },
-                    { value: "drag_and_drop", label: "Drag and drop" },
-                    { value: "matching", label: "Matching" },
+                    // { value: "drag_and_drop", label: "Drag and drop" },
+                    // { value: "matching", label: "Matching" },
                   ].map((type) => (
                     <button
                       key={type.value}

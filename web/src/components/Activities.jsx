@@ -299,20 +299,23 @@ const Activities = () => {
                   <tr
                     key={act.id}
                     style={{ cursor: "pointer" }}
-                    onClick={() => {
-                      navigate("/dashboard/participants", {
-                        state: { activityId: act.id },
-                      });
-                    }}
                   >
                     <td>{act.title}</td>
                     <td>
-                      {act.score || 0}/{act.items}
+                      {act.items}
                     </td>
                     <td>{act.time_started}</td>
                     <td>{act.time_ended}</td>
                     <td>
                       <div className="d-flex justify-content-center gap-2">
+                        <button className="btn btn-info btn-sm" 
+                        onClick={() => {
+                          navigate("/dashboard/participants", {
+                            state: { activityId: act.id },
+                          });
+                        }}>
+                          View Participants
+                        </button>
                         <button className="btn btn-primary btn-sm">
                           Update
                         </button>
