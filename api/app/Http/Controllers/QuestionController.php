@@ -2,10 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\QuestionResource;
 use App\Models\Question;
 use App\Models\QuestionItem;
 use Illuminate\Http\Request;
-use App\Http\Resources\QuestionResource;
+use Illuminate\Support\Facades\Storage;
 
 class QuestionController extends Controller
 {
@@ -41,14 +42,16 @@ class QuestionController extends Controller
     {
         //
         try {
-
-            if (isset($request->question_items) && !count($request->question_items)) {
+            $data = $request->all();
+            if (!isset($request->question_items)) {
                 return error(null, 'Question items is required.');
             }
 
             if ($request->question_items == null) {
                 return error(null, 'Question items is required.');
             }
+
+            $questionItems = json_decode($request->question_items, true);
 
             $addedQuestion = $question->create([
                 'subject_id' => $request->subject_id,
@@ -57,13 +60,21 @@ class QuestionController extends Controller
                 'question_type' => $request->question_type,
             ]);
 
-            foreach ($request->question_items as $item) {
+            foreach ($questionItems as $item) {
                 $questionItem->create([
                     'question_id' => $addedQuestion->id,
                     'question_choice' => $item['question_choice'],
-                    'question_image' => $item['question_image'],
                     'question_text' => $item['question_text'],
                 ]);
+            }
+
+            foreach($data as $key => $value) {
+                if ($request->hasFile($key)) {
+                    $imagePath = Storage::disk('public')->put('question_images', $value);
+                    $addedQuestion->images()->create([
+                        'image_path' => $imagePath,
+                    ]);
+                }
             }
 
             return success($question, 'Question successfully created');

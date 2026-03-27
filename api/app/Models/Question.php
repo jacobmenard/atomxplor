@@ -27,4 +27,9 @@ class Question extends Model
     public function scopeQuestionsCount($query) {
         return $query->count();
     }
+
+    public function images() {
+        return $this->hasMany(QuestionImage::class);
+    }
 }
+`
