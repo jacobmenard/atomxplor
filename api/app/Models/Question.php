@@ -32,4 +32,3 @@ class Question extends Model
         return $this->hasMany(QuestionImage::class);
     }
 }
-`
