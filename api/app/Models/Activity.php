@@ -15,7 +15,6 @@ class Activity extends Model
     protected $fillable = [
         'user_id', 'items', 'time_started', 'time_ended', 'activity_action', 'title'
     ];
-
     public function user() {
         return $this->belongsTo(User::class);
     }
@@ -23,4 +22,13 @@ class Activity extends Model
     public function questionaires() {
         return $this->hasMany(Questionaire::class);
     }
+
+    public function activity_participants() {
+        return $this->hasMany(ActivityParticipant::class);
+    }
+
+    public function getTotalParticipantsAttribute() {
+        return $this->activity_participants()->count();
+    }
+
 }

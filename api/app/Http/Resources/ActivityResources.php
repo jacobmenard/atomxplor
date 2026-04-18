@@ -28,15 +28,9 @@ class ActivityResources extends JsonResource
             'questionaires' => QuestionaireResource::collection($this->questionaires),
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
-            'student_participants' => $this->student_participants($this->id),
+            'student_participants' => $this->getTotalParticipantsAttribute(),
             'activity_duration' => $this->activity_duration($this->time_started, $this->time_ended)
         ];
-    }
-
-    public function student_participants($id) {
-        $participants = ActivityParticipant::where('activity_id', $id)->count();
-
-        return $participants;
     }
 
     public function activity_duration($time_started, $time_ended) {

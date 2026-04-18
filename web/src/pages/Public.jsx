@@ -176,6 +176,11 @@ const Public = () => {
               >
                 <li>
                   <button className="dropdown-item fw-semibold">
+                    View my activities
+                  </button>
+                </li>
+                <li>
+                  <button className="dropdown-item fw-semibold">
                     Account Information
                   </button>
                 </li>
@@ -234,14 +239,14 @@ const Public = () => {
               <p className="mb-2">By: {item.user?.name}</p>
               <div className="d-flex justify-content-between fw-semibold mb-3">
                 <span>Total Students:</span>
-                <span className="fw-bold" style={{ color: "#08CB00" }}>
-                  0/20
+                <span className="fw-bold">
+                  {item.student_participants}
                 </span>
               </div>
               <button
-                className="text-white fw-bold border-0 rounded mb-3"
-                style={{ backgroundColor: "#08CB00" }}
-                disabled={item.activity_action}
+                className="text-white fw-bold border-0 rounded mb-3 text-uppercase"
+                style={ item.activity_action === "started" ? { backgroundColor: "#08CB00" } : item.activity_action === 'paused' ? { backgroundColor: "#ff9d00" } : item.activity_action === 'done' ? { backgroundColor: "#ff0000" } : { backgroundColor: "#6f6f6f" } }
+                disabled="true"
               >
                 {item.activity_action}
               </button>
