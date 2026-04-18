@@ -145,17 +145,17 @@ const ActivityQuestion = () => {
             Question #{currentIndex + 1}: {currentQuestion.question}
           </h5>
           
-          <div className="question-images my-5">
             {questionImages.length > 0 && (
-              questionImages.map((img, idx) => (
-                <img
-                   key={idx}
-                  src={img.image_path}
-                  alt={`Question ${currentIndex + 1} Image ${idx + 1}`}
-                />
-              ))
+              <div className="question-images my-5">
+                {questionImages.map((img, idx) => (
+                  <img
+                    key={idx}
+                    src={img.image_path}
+                    alt={`Question ${currentIndex + 1} Image ${idx + 1}`}
+                  />
+                ))}
+              </div>
             )}
-          </div>
 
           {currentQuestion.question_items.map((opt) => (
             <div key={opt.id} className="form-check option-item mb-3">
