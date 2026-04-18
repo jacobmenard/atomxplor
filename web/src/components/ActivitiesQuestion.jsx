@@ -46,6 +46,7 @@ const ActivityQuestion = () => {
     fetchActivity();
   }, [activityId, studentToken, navigate]);
 
+  const questionImages = activity?.questionaires?.[currentIndex]?.question?.question_images || [];
   const currentQuestion = activity?.questionaires?.[currentIndex]?.question;
   const isLastQuestion = currentIndex === activity?.questionaires?.length - 1;
 
@@ -143,6 +144,18 @@ const ActivityQuestion = () => {
           <h5 className="fw-bold mb-4">
             Question #{currentIndex + 1}: {currentQuestion.question}
           </h5>
+          
+          <div className="question-images my-5">
+            {questionImages.length > 0 && (
+              questionImages.map((img, idx) => (
+                <img
+                   key={idx}
+                  src={img.image_path}
+                  alt={`Question ${currentIndex + 1} Image ${idx + 1}`}
+                />
+              ))
+            )}
+          </div>
 
           {currentQuestion.question_items.map((opt) => (
             <div key={opt.id} className="form-check option-item mb-3">

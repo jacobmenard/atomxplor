@@ -121,6 +121,7 @@ const Activities = () => {
         },
         body: JSON.stringify({
           user_id: Number(userID),
+          subject_id: Number(subject),
           title: title,
           items: Number(items),
           time_started: startTime,

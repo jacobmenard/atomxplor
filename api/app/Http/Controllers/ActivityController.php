@@ -83,7 +83,7 @@ class ActivityController extends Controller
         try {
             $user = Auth::user();
 
-            $totalActivities = $question->questionsCount();
+            $totalActivities = $question->where('subject_id', $request->subject_id)->questionsCount();
 
             if ($totalActivities >= $request->items) {
             
@@ -96,7 +96,7 @@ class ActivityController extends Controller
                     'title' => $request->title,
                 ]);
 
-                $questions = $question->inRandomOrder()->limit($request->items)->get();
+                $questions = $question->where('subject_id', $request->subject_id)->inRandomOrder()->limit($request->items)->get();
 
                 foreach ($questions as $question) {
                     $questionaire->create([
@@ -107,7 +107,7 @@ class ActivityController extends Controller
 
                 return success($saveActivity, 'Activity successfully created');
             } else {
-                return error(null, 'Error, requested items are greater than the question stored.');
+                return error(null, 'Error, the system have ' . $totalActivities . ' items available, but ' . $request->items . ' requested items are greater than the question stored.');
             }
 
             

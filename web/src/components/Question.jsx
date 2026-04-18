@@ -29,6 +29,9 @@ const Question = () => {
   const [updatedQuestionType, setUpdatedQuestionType] =
     useState("multiple_choice");
 
+  const [questionImages, setQuestionImages] = useState([]);
+  const [previewImages, setPreviewImages] = useState([]);
+
   const [choices, setChoices] = useState([
     { question_choice: "a", question_text: "" },
     { question_choice: "b", question_text: "" },
@@ -178,27 +181,36 @@ const Question = () => {
     setIsSaving(true);
     setMessage("");
 
+    const questionItems = JSON.stringify(
+      questionType === "multiple_choice"
+        ? choices.map((c) => ({
+            question_choice: c.question_choice,
+            question_text: c.question_text,
+          }))
+        : []
+    )
+
+    let formData = new FormData();
+    
+    formData.append("subject_id", Number(selectedSubjectId));
+    formData.append("question", question);
+    formData.append("answer", questionType === "multiple_choice" ? answer : "");
+    formData.append("question_type", questionType);
+    formData.append("question_items", questionItems);
+
+    if (questionImages.length > 0) {
+      for(var i = 0; i < questionImages.length; i++) {
+        formData.append(`question_images${i}`, questionImages[i], questionImages[i].name);
+      }
+    }
+
     try {
       const response = await fetch("http://127.0.0.1:8000/api/v1/question", {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
           Authorization: `Bearer ${authToken}`,
-        },
-        body: JSON.stringify({
-          subject_id: Number(selectedSubjectId),
-          question,
-          answer: questionType === "multiple_choice" ? answer : null,
-          question_type: questionType,
-          question_items:
-            questionType === "multiple_choice"
-              ? choices.map((c) => ({
-                  question_choice: c.question_choice,
-                  question_text: c.question_text,
-                  question_image: null,
-                }))
-              : [],
-        }),
+        },  
+        body: formData, 
       });
 
       const data = await response.json();
@@ -380,6 +392,16 @@ const Question = () => {
     return "alert-info";
   };
 
+  const handleChange = (event) => {
+    const files = Array.from(event.target.files);
+    const imageUrls = files.map(file => URL.createObjectURL(file));
+    setQuestionImages(files);
+    setPreviewImages(imageUrls);
+
+    console.log(imageUrls);
+  };
+
+
   return (
     <div className="container mt-4">
       <div className="d-flex justify-content-between align-items-center p-2 pe-0">
@@ -490,6 +512,23 @@ const Question = () => {
                   onChange={(e) => setQuestion(e.target.value)}
                 />
               </div>
+
+              <div className="mb-3 d-flex gap-2 align-items-center">
+                
+                <label className="form-label fw-semibold">Add images:</label>
+                <input type="file" 
+                accept=".jpg, .png, .svg, .webp"
+                multiple onChange={handleChange} />
+
+              </div>
+              
+              { previewImages.length > 0 && (
+              <div className="mb-3 d-flex flex-wrap gap-2">
+                  {previewImages.map((src, index) => (
+                    <img src={src} width="100" height="100" alt="" />
+                  ))}
+              </div>
+              ) }
 
               <div className="mb-3">
                 <label className="form-label fw-semibold">Subject:</label>

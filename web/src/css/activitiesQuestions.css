@@ -1,0 +1,12 @@
+.question-images {
+    gap: 1rem;
+    display: flex;
+}
+
+.question-images img {
+    width: 300px;
+    height: 300px;
+    object-fit: cover;
+    border-radius: 5px;
+    cursor: pointer;
+}

@@ -10,6 +10,7 @@ import ActivitiesQuestions from "./components/ActivitiesQuestion";
 import Students from "./components/Students";
 import GradeLevel from "./components/GradeLevel";
 import ParticipantList from "./components/ParticipantList";
+import "./css/activitiesQuestions.css";
 
 function App() {
   return (

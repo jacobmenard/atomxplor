@@ -136,7 +136,7 @@ const ParticipantList = () => {
         <div className="d-flex gap-2">
           <button
             className="btn btn-primary"
-            disabled={action !== "paused" && action !== "done"}
+            disabled={action !== "paused" && action !== "not_start" && action !== "done"}
             onClick={() => activityAction("started")}
           >
             Start Activity
@@ -168,8 +168,8 @@ const ParticipantList = () => {
         </div>
         <div className="d-flex align-items-center gap-2">
           Activity action: 
-          <Badge pill bg={activityObjects?.activity_action === 'started' ? 'primary' : activityObjects?.activity_action === 'paused' ? 'warning' : activityObjects?.activity_action === 'not_started' ? 'secondary' : 'success'}>
-            {activityObjects?.activity_action === 'started' ? 'Started' : activityObjects?.activity_action === 'paused' ? 'Paused' : activityObjects?.activity_action === 'not_started' ? 'Not Started' : 'Done'}
+          <Badge pill bg={activityObjects?.activity_action === 'started' ? 'primary' : activityObjects?.activity_action === 'paused' ? 'warning' : activityObjects?.activity_action === 'not_start' ? 'secondary' : 'success'}>
+            {activityObjects?.activity_action === 'started' ? 'Started' : activityObjects?.activity_action === 'paused' ? 'Paused' : activityObjects?.activity_action === 'not_start' ? 'Not Start' : 'Done'}
           </Badge>
         </div>  
       </div>
