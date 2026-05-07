@@ -35,7 +35,7 @@ const Public = () => {
     const fetchActivity = async () => {
       try {
         const response = await fetch(
-          "http://127.0.0.1:8000/api/v1/public/activity/list"
+          `${import.meta.env.VITE_API_URL}/api/v1/public/activity/list`
         );
         const data = await response.json();
         setActivity(data.data || []);
@@ -52,7 +52,7 @@ const Public = () => {
   const fetchUserProfile = async () => {
     const authToken = localStorage.getItem("studentToken");
     try {
-      const response = await fetch("http://127.0.0.1:8000/api/user", {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/user`, {
         method: "GET",
         headers: {
           "Content-type": "application/json",
@@ -74,7 +74,7 @@ const Public = () => {
       alert("Unauthorized");
     }
     try {
-      const response = await fetch("http://127.0.0.1:8000/api/v1/logout", {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/logout`, {
         method: "POST",
         headers: { Authorization: `Bearer ${authToken}` },
       });
@@ -96,7 +96,7 @@ const Public = () => {
     setIsLoading(true);
     setError("");
     try {
-      const response = await fetch("http://127.0.0.1:8000/api/login-using-id", {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/login-using-id`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -134,7 +134,7 @@ const Public = () => {
     setMessage("");
     try {
       const response = await fetch(
-        `http://127.0.0.1:8000/api/v1/activity/${item.id}/check-already-answered`,
+        `${import.meta.env.VITE_API_URL}/api/v1/activity/${item.id}/check-already-answered`,
         { headers: { Authorization: `Bearer ${authToken}` } }
       );
       const data = await response.json();

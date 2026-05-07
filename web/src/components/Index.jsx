@@ -30,7 +30,7 @@ const Index = () => {
 
     const fetchDashboard = async () => {
       try {
-        const response = await fetch("http://127.0.0.1:8000/api/v1/dashboard", {
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/dashboard`, {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
@@ -49,7 +49,7 @@ const Index = () => {
 
     const fetchUser = async () => {
       try {
-        const response = await fetch("http://127.0.0.1:8000/api/user", {
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/user`, {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
@@ -69,7 +69,7 @@ const Index = () => {
 
     const fetchActivity = async () => {
       try {
-        const response = await fetch("http://127.0.0.1:8000/api/v1/activity", {
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/activity`, {
           method: "GET",
           headers: { Authorization: `Bearer ${authToken}` },
         });

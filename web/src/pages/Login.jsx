@@ -17,7 +17,9 @@ const Login = () => {
     setMessage("");
     setLoading(true);
 
-    const API_ENDPOINT = "http://localhost:8000/api/login";
+  
+
+    const API_ENDPOINT = `${import.meta.env.VITE_API_URL}/api/login`;
 
     try {
       const response = await fetch(API_ENDPOINT, {

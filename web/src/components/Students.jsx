@@ -32,7 +32,7 @@ const Students = () => {
 
     try {
       const response = await fetch(
-        "http://127.0.0.1:8000/api/v1/students/list",
+        `${import.meta.env.VITE_API_URL}/api/v1/students/list`,
         {
           method: "GET",
           headers: {
@@ -67,7 +67,7 @@ const Students = () => {
 
     try {
       const response = await fetch(
-        `http://127.0.0.1:8000/api/v1/students/list?search=${search}`,
+        `${import.meta.env.VITE_API_URL}/api/v1/students/list?search=${search}`,
         {
           method: "GET",
           headers: {
@@ -91,7 +91,7 @@ const Students = () => {
     if (!authToken) return navigate("/");
 
     try {
-      const response = await fetch("http://127.0.0.1:8000/api/v1/grade-level", {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/grade-level`, {
         method: "GET",
         headers: {
           Authorization: `Bearer ${authToken}`,
@@ -113,7 +113,7 @@ const Students = () => {
 
     try {
       const response = await fetch(
-        "http://127.0.0.1:8000/api/v1/students/new-student",
+        `${import.meta.env.VITE_API_URL}/api/v1/students/new-student`,
         {
           method: "POST",
           headers: {
@@ -163,7 +163,7 @@ const Students = () => {
 
     try {
       const response = await fetch(
-        `http://127.0.0.1:8000/api/v1/students/update-student/${selectedStudentId}`,
+        `${import.meta.env.VITE_API_URL}/api/v1/students/update-student/${selectedStudentId}`,
         {
           method: "PUT",
           headers: {

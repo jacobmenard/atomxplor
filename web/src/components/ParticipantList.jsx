@@ -26,7 +26,7 @@ const ParticipantList = () => {
 
     try {
       const response = await fetch(
-        `http://127.0.0.1:8000/api/v1/activities/student-participants-list?activity=${activityId}`,
+        `${import.meta.env.VITE_API_URL}/api/v1/activities/student-participants-list?activity=${activityId}`,
         {
           method: "GET",
           headers: {
@@ -54,7 +54,7 @@ const ParticipantList = () => {
     }
     try {
       const response = await fetch(
-        `http://127.0.0.1:8000/api/v1/activity/get-object/${activityId}`,
+        `${import.meta.env.VITE_API_URL}/api/v1/activity/get-object/${activityId}`,
         {
           method: "GET",
           headers: {
@@ -92,7 +92,7 @@ const ParticipantList = () => {
 
     try {
       const response = await fetch(
-        "http://127.0.0.1:8000/api/v1/activities/student-participants-action",
+        `${import.meta.env.VITE_API_URL}/api/v1/activities/student-participants-action`,
         {
           method: "PUT",
           headers: {

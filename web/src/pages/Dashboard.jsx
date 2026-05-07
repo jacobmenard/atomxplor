@@ -26,7 +26,7 @@ const Dashboard = () => {
         return;
       }
 
-      const response = await fetch("http://localhost:8000/api/v1/logout", {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/logout`, {
         method: "POST",
         headers: {
           Accept: "application/json",

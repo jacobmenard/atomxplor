@@ -51,7 +51,7 @@ const Question = () => {
     if (!authToken) return;
 
     try {
-      const response = await fetch("http://127.0.0.1:8000/api/v1/subject", {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/subject`, {
         headers: { Authorization: `Bearer ${authToken}` },
       });
 
@@ -86,7 +86,7 @@ const Question = () => {
 
     setIsLoading(true);
     try {
-      const response = await fetch("http://127.0.0.1:8000/api/v1/question", {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/question`, {
         method: "GET",
         headers: { Authorization: `Bearer ${authToken}` },
       });
@@ -205,7 +205,7 @@ const Question = () => {
     }
 
     try {
-      const response = await fetch("http://127.0.0.1:8000/api/v1/question", {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/question`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${authToken}`,
@@ -239,7 +239,7 @@ const Question = () => {
 
     try {
       const response = await fetch(
-        `http://127.0.0.1:8000/api/v1/question/${id}`,
+        `${import.meta.env.VITE_API_URL}/api/v1/question/${id}`,
         {
           method: "DELETE",
           headers: { Authorization: `Bearer ${authToken}` },
@@ -326,7 +326,7 @@ const Question = () => {
 
     try {
       const response = await fetch(
-        `http://127.0.0.1:8000/api/v1/question/${updatingId}`,
+        `${import.meta.env.VITE_API_URL}/api/v1/question/${updatingId}`,
         {
           method: "PUT",
           headers: {
@@ -368,7 +368,7 @@ const Question = () => {
 
     try {
       const response = await fetch(
-        `http://127.0.0.1:8000/api/v1/question?search=${search}`,
+        `${import.meta.env.VITE_API_URL}/api/v1/question?search=${search}`,
         {
           method: "GET",
           headers: {

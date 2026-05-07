@@ -17,7 +17,7 @@ const GradeLevel = () => {
 
   const fetchGrade = async () => {
     try {
-      const response = await fetch("http://127.0.0.1:8000/api/v1/grade-level", {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/grade-level`, {
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${authToken}`,
@@ -51,7 +51,7 @@ const GradeLevel = () => {
     e.preventDefault();
 
     try {
-      const response = await fetch("http://127.0.0.1:8000/api/v1/grade-level", {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/grade-level`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -79,7 +79,7 @@ const GradeLevel = () => {
 
     try {
       const response = await fetch(
-        `http://127.0.0.1:8000/api/v1/grade-level/${selectedId}`,
+        `${import.meta.env.VITE_API_URL}/api/v1/grade-level/${selectedId}`,
         {
           method: "PUT",
           headers: {
@@ -109,7 +109,7 @@ const GradeLevel = () => {
   const deleteGradeLevel = async (id) => {
     try {
       const response = await fetch(
-        `http://127.0.0.1:8000/api/v1/grade-level/${id}`,
+        `${import.meta.env.VITE_API_URL}/api/v1/grade-level/${id}`,
         {
           method: "DELETE",
           headers: {

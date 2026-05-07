@@ -25,7 +25,7 @@ const ActivityQuestion = () => {
     const fetchActivity = async () => {
       try {
         const response = await fetch(
-          `http://127.0.0.1:8000/api/v1/activity/get-object/${activityId}`,
+          `${import.meta.env.VITE_API_URL}/api/v1/activity/get-object/${activityId}`,
           {
             method: "GET",
             headers: {
@@ -73,7 +73,7 @@ const ActivityQuestion = () => {
 
     try {
       const response = await fetch(
-        `http://127.0.0.1:8000/api/v1/public/activity/${activityId}/submit-answer?student_id=${studentId}`,
+        `${import.meta.env.VITE_API_URL}/api/v1/public/activity/${activityId}/submit-answer?student_id=${studentId}`,
         {
           method: "POST",
           headers: {
