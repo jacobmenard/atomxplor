@@ -78,8 +78,8 @@ const Dashboard = () => {
                 { icon: "bi-people", label: "Activities", path: "activities" },
                 {
                   icon: "bi-file-earmark-text",
-                  label: "Reports",
-                  path: "reports",
+                  label: "Subjects",
+                  path: "subjects",
                 },
                 {
                   icon: "bi-globe",

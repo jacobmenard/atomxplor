@@ -1,5 +1,8 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import charles from "../assets/charles.jpg";
+import boyle from "../assets/boyles.jpg";
+import gayLussac from "../assets/gay-lussac.jpg";
 
 const Public = () => {
   const [activity, setActivity] = useState([]);
@@ -18,6 +21,12 @@ const Public = () => {
   const [password, setPassword] = useState("");
   const [studentId, setStudentId] = useState("");
   const [userProfile, setUserProfile] = useState("");
+
+  const simulatorList = [
+    { img: boyle, description: "Boyle's Law", link: 'https://mechsimulator.com/tools/boyles-law/'},
+    { img: charles, description: "Charles' Law", link: 'https://mechsimulator.com/tools/charles-law/'},
+    { img: gayLussac, description: "Gay-Lussac's Law", link: 'https://phet.colorado.edu/sims/html/gas-properties/latest/gas-properties_all.html' },
+  ];
 
   const navigate = useNavigate();
 
@@ -48,6 +57,10 @@ const Public = () => {
     fetchUserProfile();
     fetchActivity();
   }, []);
+
+  const redirectToSimulator = (link) => {
+    window.open(link, "_blank");
+  };
 
   const fetchUserProfile = async () => {
     const authToken = localStorage.getItem("studentToken");
@@ -153,7 +166,7 @@ const Public = () => {
 
   return (
     <div className="p-2">
-      <div className="d-flex justify-content-end mt-3 me-3 mb-3 sticky-top">
+      <div className="d-flex justify-content-end m-3 sticky-top">
         {isLogin ? (
           <div className="position-relative" ref={dropdownRef}>
             <button
@@ -174,7 +187,7 @@ const Public = () => {
                   zIndex: 1002,
                 }}
               >
-                <li>
+                {/* <li>
                   <button className="dropdown-item fw-semibold">
                     View my activities
                   </button>
@@ -188,7 +201,7 @@ const Public = () => {
                   <button className="dropdown-item fw-semibold">
                     Change Password
                   </button>
-                </li>
+                </li> */}
                 <li>
                   <button
                     className="dropdown-item fw-semibold text-danger"
@@ -212,17 +225,16 @@ const Public = () => {
 
       {!showDropdown && (
         <div className="d-flex justify-content-end mt-3 me-3 sticky-top">
-          <button className="btn btn-primary">Search Activity</button>
+          {/* <button className="btn btn-primary">Search Activity</button> */}
         </div>
       )}
 
       <div className="mb-2">
-        <h2 className="ms-3">Welcome Students</h2>
+        <h2 className="mb-4 mx-3 text-center">Activity List</h2>
       </div>
 
       <div
-        className="d-flex flex-wrap gap-3"
-        style={{ marginLeft: "100px", marginRight: "50px" }}
+        className="d-flex flex-wrap justify-content-center gap-3 px-5 pb-5 pt-3"
       >
         {isLoading ? (
           <div className="text-center py-5 w-100">
@@ -235,7 +247,7 @@ const Public = () => {
               className="border p-3 rounded-4 bg-white shadow-sm"
               style={{ width: "300px" }}
             >
-              <p className="fw-bold mb-2">Example Activity</p>
+              <p className="fw-bold mb-2">{item.title}</p>
               <p className="mb-2">By: {item.user?.name}</p>
               <div className="d-flex justify-content-between fw-semibold mb-3">
                 <span>Total Students:</span>
@@ -268,6 +280,33 @@ const Public = () => {
             </div>
           ))
         )}
+      </div>
+
+      <div>
+        <h2 className="mb-4 mx-3 text-center">Gas Law Simulators</h2>
+      </div>
+
+      <div
+        className="d-flex flex-wrap justify-content-center gap-3 px-5 pb-5 pt-3"
+      >
+        {simulatorList.map((item, index) => (
+            <div
+              key={index}
+              className="border p-3 rounded-4 bg-white shadow-sm"
+              style={{ width: "400px" }}
+            >
+              <p className="fw-bold mb-2">{item.description}</p>
+              <img src={item.img} className="w-100 object-fit-contain my-2" height="250" alt={item.description} />
+              <div className="d-grid">
+                <button
+                  className="btn btn-primary fw-bold"
+                  onClick={() => redirectToSimulator(item.link)}
+                >
+                  Go to {}{item.description} Simulator
+                </button>
+              </div>
+            </div>
+          ))}
       </div>
 
       {studentLoginModal && (

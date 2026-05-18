@@ -10,6 +10,7 @@ import ActivitiesQuestions from "./components/ActivitiesQuestion";
 import Students from "./components/Students";
 import GradeLevel from "./components/GradeLevel";
 import ParticipantList from "./components/ParticipantList";
+import Subjects from "./components/Subjects";
 import "./css/activitiesQuestions.css";
 
 function App() {
@@ -25,6 +26,7 @@ function App() {
           <Route path="students" element={<Students />} />
           <Route path="grade-level" element={<GradeLevel />} />
           <Route path="participants" element={<ParticipantList />} />
+          <Route path="subjects" element={<Subjects />} />
         </Route>
         <Route path="/public" element={<Public />} />
         <Route path="/activity/question" element={<ActivitiesQuestions />} />

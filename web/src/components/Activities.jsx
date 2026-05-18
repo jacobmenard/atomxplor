@@ -27,7 +27,7 @@ const Activities = () => {
 
     const fetchSubjects = async () => {
       try {
-        const response = await fetch("${import.meta.env.VITE_API_URL}/api/v1/subject", {
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/subject`, {
           headers: { Authorization: `Bearer ${authToken}` },
         });
         const data = await response.json();
@@ -50,7 +50,7 @@ const Activities = () => {
     }
 
     try {
-      const response = await fetch("${import.meta.env.VITE_API_URL}/api/v1/activity", {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/activity`, {
         method: "GET",
         headers: { Authorization: `Bearer ${authToken}` },
       });
@@ -113,7 +113,7 @@ const Activities = () => {
     }
 
     try {
-      const response = await fetch("${import.meta.env.VITE_API_URL}/api/v1/activity", {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/activity`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
