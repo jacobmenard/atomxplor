@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import charles from "../assets/charles.jpg";
 import boyle from "../assets/boyles.jpg";
 import gayLussac from "../assets/gay-lussac.jpg";
+import illustrae from "../assets/illustrae.jpg";
 
 const Public = () => {
   const [activity, setActivity] = useState([]);
@@ -26,6 +27,7 @@ const Public = () => {
     { img: boyle, description: "Boyle's Law", link: 'https://mechsimulator.com/tools/boyles-law/'},
     { img: charles, description: "Charles' Law", link: 'https://mechsimulator.com/tools/charles-law/'},
     { img: gayLussac, description: "Gay-Lussac's Law", link: 'https://phet.colorado.edu/sims/html/gas-properties/latest/gas-properties_all.html' },
+    { img: illustrae, description: "Illustrae", link: 'https://illustrae.co/' },
   ];
 
   const navigate = useNavigate();

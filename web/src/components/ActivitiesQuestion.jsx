@@ -150,7 +150,7 @@ const ActivityQuestion = () => {
                 {questionImages.map((img, idx) => (
                   <img
                     key={idx}
-                    src={img.image_path}
+                    src={`${import.meta.env.VITE_API_URL}${img.image_path}`}
                     alt={`Question ${currentIndex + 1} Image ${idx + 1}`}
                   />
                 ))}

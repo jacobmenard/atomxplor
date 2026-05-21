@@ -16,7 +16,7 @@ class QuestionImageResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'image_path' => config('app.url') . '/storage/' . $this->image_path,
+            'image_path' => '/storage/' . $this->image_path,
         ];
     }
 }
