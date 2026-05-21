@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Link, Outlet, useNavigate } from "react-router-dom";
+import header_logo from "../assets/header_logo.png";
 
 const Dashboard = () => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -52,7 +53,20 @@ const Dashboard = () => {
 
   return (
     <div className="container-fluid min-vh-100 p-0">
-      <div className="row g-0">
+      <div className="row">
+        <div className="col-12 px-4 py-3 d-flex align-items-center justify-content-between bg-white">
+          <img src={header_logo} height={60} alt="Logo" />
+
+          <div>
+            <button className="btn btn-primary px-3 py-2"
+              onClick={handleLogout}
+              disabled={isLoggingOut}
+            >
+              {isLoggingOut ? "Logging out..." : "Logout User"}</button>
+          </div>
+        </div>
+      </div>
+      <div className="row g-">
         <div
           className={`col-12 col-md-3 col-lg-2 d-flex flex-column justify-content-between p-3 bg-white rounded-start mb-3 mb-md-0 ${
             sidebarOpen ? "d-block" : "d-none"
@@ -112,27 +126,6 @@ const Dashboard = () => {
                 </li>
               ))}
             </ul>
-          </div>
-
-          <div className="w-100 mt-3">
-            <button
-              className="btn w-100 fw-bold nav-link text-dark text-center logout-btn"
-              style={{
-                backgroundColor: "white",
-                padding: "0.5rem 1rem",
-              }}
-              onClick={handleLogout}
-              disabled={isLoggingOut}
-            >
-              <i className="bi bi-box-arrow-right me-2"></i>
-              {isLoggingOut ? "Logging out..." : "Logout User"}
-            </button>
-
-            {error && (
-              <div className="alert alert-danger mt-3 py-2" role="alert">
-                {error}
-              </div>
-            )}
           </div>
         </div>
 

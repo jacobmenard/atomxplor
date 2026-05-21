@@ -4,6 +4,7 @@ import charles from "../assets/charles.jpg";
 import boyle from "../assets/boyles.jpg";
 import gayLussac from "../assets/gay-lussac.jpg";
 import illustrae from "../assets/illustrae.jpg";
+import header_logo from "../assets/header_logo.png";
 
 const Public = () => {
   const [activity, setActivity] = useState([]);
@@ -168,61 +169,64 @@ const Public = () => {
 
   return (
     <div className="p-2">
-      <div className="d-flex justify-content-end m-3 sticky-top">
+      <div className="d-flex justify-content-between m-3 sticky-top">
+        <img src={header_logo} height={60} alt="Logo" />
         {isLogin ? (
-          <div className="position-relative" ref={dropdownRef}>
-            <button
-              className="btn btn-light fw-semibold shadow-sm"
-              style={{ borderRadius: "10px" }}
-              onClick={() => setShowDropdown(!showDropdown)}
-            >
-              Welcome {userProfile.name} ▼
-            </button>
-            {showDropdown && (
-              <ul
-                className="dropdown-menu show shadow"
-                style={{
-                  position: "absolute",
-                  top: "100%",
-                  right: 0,
-                  borderRadius: "10px",
-                  zIndex: 1002,
-                }}
+            <div ref={dropdownRef}>
+              <button
+                className="btn btn-light fw-semibold shadow-sm"
+                style={{ borderRadius: "10px" }}
+                onClick={() => setShowDropdown(!showDropdown)}
               >
-                {/* <li>
-                  <button className="dropdown-item fw-semibold">
-                    View my activities
-                  </button>
-                </li>
-                <li>
-                  <button className="dropdown-item fw-semibold">
-                    Account Information
-                  </button>
-                </li>
-                <li>
-                  <button className="dropdown-item fw-semibold">
-                    Change Password
-                  </button>
-                </li> */}
-                <li>
-                  <button
-                    className="dropdown-item fw-semibold text-danger"
-                    onClick={handleLogout}
-                  >
-                    Logout
-                  </button>
-                </li>
-              </ul>
-            )}
-          </div>
-        ) : (
-          <button
-            className="btn btn-primary "
-            onClick={() => setStudentLoginModal(true)}
-          >
-            Login
-          </button>
-        )}
+                Welcome {userProfile.name} ▼
+              </button>
+              {showDropdown && (
+                <ul
+                  className="dropdown-menu show shadow"
+                  style={{
+                    position: "absolute",
+                    top: "100%",
+                    right: 0,
+                    borderRadius: "10px",
+                    zIndex: 1002,
+                  }}
+                >
+                  {/* <li>
+                    <button className="dropdown-item fw-semibold">
+                      View my activities
+                    </button>
+                  </li>
+                  <li>
+                    <button className="dropdown-item fw-semibold">
+                      Account Information
+                    </button>
+                  </li>
+                  <li>
+                    <button className="dropdown-item fw-semibold">
+                      Change Password
+                    </button>
+                  </li> */}
+                  <li>
+                    <button
+                      className="dropdown-item fw-semibold text-danger"
+                      onClick={handleLogout}
+                    >
+                      Logout
+                    </button>
+                  </li>
+                </ul>
+              )}
+            </div>
+          ) : (
+            <div className="d-flex align-items-center">
+              <button
+                className="btn btn-primary "
+                onClick={() => setStudentLoginModal(true)}
+              >
+                Login
+              </button>
+            </div>
+          )}
       </div>
 
       {!showDropdown && (

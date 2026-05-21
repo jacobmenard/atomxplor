@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import logo from "../assets/logo.png";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -71,9 +72,9 @@ const Login = () => {
           }}
         >
           <div className="card-body p-4">
-            <h3 className="text-center mb-4 fw-bold text-dark">
-              Teacher Login
-            </h3>
+            <div className="text-center mb-4">
+              <img src={logo} alt="Logo" className="img-fluid" />
+            </div>
 
             {message && <div className="alert alert-success">{message}</div>}
 

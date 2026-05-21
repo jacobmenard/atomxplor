@@ -101,7 +101,7 @@ const Index = () => {
           <h2>Welcome back, {user.name || "User"}!</h2>
         )}
 
-        <div className="d-flex flex-row gap-2 mt-3 flex-wrap">
+        <div className="d-flex gap-2 mt-3 flex-wrap w-100">
           <div className="bg-danger text-white rounded-3 p-3 w-25 text-start shadow-sm">
             <p className="mb-1 fw-semibold">Created Activities</p>
             <h4 className="fw-bold mb-0">{dashboard.total_activities}</h4>
